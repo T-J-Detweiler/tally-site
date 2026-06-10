@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tally — Honest calorie tracking, without the fuss</title>
+  <meta name="description" content="Tally is the effortless way to track what you eat. Snap a photo or just say what you had — Tally does the rest, and tells you exactly what's left to hit your goal today.">
+  <meta name="theme-color" content="#7B00FF">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id='b'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%237B00FF'/%3E%3Cstop%20offset='1'%20stop-color='%23FF006E'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='512'%20height='512'%20rx='115'%20fill='url(%23b)'/%3E%3Crect%20x='148'%20y='148'%20width='216'%20height='50'%20rx='25'%20fill='white'/%3E%3Crect%20x='231'%20y='210'%20width='50'%20height='166'%20rx='25'%20fill='white'/%3E%3C/svg%3E">
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:title" content="Tally — Honest calorie tracking, without the fuss">
+  <meta property="og:description" content="Snap a photo or just say what you ate. Tally gives you an honest estimate in one tap — no obsessive logging, no guilt.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tallyapplications.com">
+  <meta property="og:image" content="https://tallyapplications.com/icon-192.png">
+
+  <style>
+    :root {
+      --grad: linear-gradient(135deg, #7B00FF, #FF006E);
+      --purple: #7B00FF;
+      --pink: #FF006E;
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --t1: #222222;
+      --t2: #666666;
+      --t3: #999999;
+      --border: #e8e8e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Nav ── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(245,245,245,0.82);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+    .brand-logo { width: 34px; height: 34px; border-radius: 9px; display: block; }
+    .brand-logo.sm { width: 28px; height: 28px; border-radius: 7px; }
+    .brand span {
+      font-size: 1.32rem; font-weight: 800; letter-spacing: -0.02em;
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-cta {
+      padding: 9px 20px; font-size: 0.92rem; font-weight: 700; color: #fff;
+      background: var(--grad); border: none; border-radius: 11px;
+      text-decoration: none; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(123,0,255,0.30);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(123,0,255,0.38); }
+    /* "Coming soon" — looks branded but isn't clickable yet */
+    .soon { cursor: default !important; }
+    .soon:hover { transform: none !important; box-shadow: 0 4px 14px rgba(123,0,255,0.30) !important; }
+    .nav-soon {
+      padding: 8px 18px; font-size: 0.88rem; font-weight: 700; color: var(--purple);
+      background: #fdf4ff; border: 1px solid #f0d9ff; border-radius: 999px;
+    }
+
+    /* ── Hero ── */
+    .hero { padding: 88px 0 72px; text-align: center; }
+    .pill {
+      display: inline-block; padding: 6px 15px; margin-bottom: 26px;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
+      color: var(--purple); background: #fdf4ff;
+      border: 1px solid #f0d9ff; border-radius: 999px;
+    }
+    .hero h1 {
+      font-size: clamp(2.3rem, 6vw, 3.9rem); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 22px;
+    }
+    .hero h1 .grad {
+      background: var(--grad); -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p.lead {
+      font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--t2);
+      max-width: 640px; margin: 0 auto 36px;
+    }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 15px 34px; font-size: 1.02rem; font-weight: 700; color: #fff;
+      background: var(--grad); border: none; border-radius: 13px;
+      text-decoration: none; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(123,0,255,0.32);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(123,0,255,0.42); }
+    .btn-ghost {
+      padding: 15px 30px; font-size: 1.02rem; font-weight: 700;
+      color: var(--purple); background: var(--surface);
+      border: 1.5px solid #ead7ff; border-radius: 13px;
+      text-decoration: none; cursor: pointer; transition: background 0.15s ease;
+    }
+    .btn-ghost:hover { background: #fdf4ff; }
+
+    /* ── Phone mock ── */
+    .device-row { display: flex; justify-content: center; margin-top: 64px; }
+    .phone {
+      width: 290px; border-radius: 42px; padding: 12px;
+      background: #111; box-shadow: 0 30px 70px rgba(123,0,255,0.22), 0 10px 30px rgba(0,0,0,0.18);
+    }
+    .phone-screen { background: var(--bg); border-radius: 32px; overflow: hidden; padding: 16px 14px 14px; text-align: left; }
+    .ps-card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 10px; }
+    /* date header */
+    .ps-datehead { display: flex; align-items: center; justify-content: space-between; }
+    .ps-nav { color: var(--purple); font-size: 1.3rem; line-height: 1; }
+    .ps-day { font-size: 0.62rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.06em; }
+    .ps-date { font-size: 1.18rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    /* calories-left card */
+    .ps-toprow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+    .ps-lbl { font-size: 0.6rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ps-week { font-size: 0.6rem; font-weight: 600; color: var(--purple); }
+    .ps-big { font-size: 2.3rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+    .ps-sub { font-size: 0.66rem; color: var(--t3); margin: 3px 0 9px; }
+    .ps-bar { height: 8px; background: #ebebeb; border-radius: 4px; overflow: hidden; }
+    .ps-bar.thin { height: 5px; }
+    .ps-fill { height: 100%; background: var(--grad); border-radius: 4px; }
+    .ps-macro { margin-top: 12px; }
+    .ps-macro-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+    .ps-macro-top .nm { font-size: 0.64rem; font-weight: 700; color: var(--t3); text-transform: capitalize; }
+    .ps-macro-top .lf { font-size: 0.66rem; font-weight: 800; color: var(--purple); }
+    .ps-calc { font-size: 0.62rem; color: var(--purple); text-decoration: underline; margin-top: 11px; display: inline-block; }
+    /* today's tally card */
+    .ps-totals { font-size: 0.66rem; color: var(--t2); margin-top: 3px; }
+    .ps-mealrow { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .ps-mealrow:last-child { border-bottom: none; }
+    .ps-meal-label { font-size: 0.6rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.06em; }
+    .ps-meal-macros { font-size: 0.62rem; color: var(--t3); font-weight: 600; margin-top: 3px; }
+    .ps-meal-macros .c { color: var(--purple); font-weight: 800; }
+    .ps-chev { color: var(--t3); font-size: 0.8rem; flex-shrink: 0; }
+
+    /* ── Sections ── */
+    section.block { padding: 80px 0; }
+    .section-head { text-align: center; max-width: 620px; margin: 0 auto 54px; }
+    .section-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .section-head p { font-size: 1.08rem; color: var(--t2); }
+
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .feature {
+      background: var(--surface); border-radius: 18px; padding: 30px 26px;
+      border: 1px solid var(--border); transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .feature:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .feature .ico {
+      width: 50px; height: 50px; border-radius: 14px; margin-bottom: 18px;
+      background: #fdf4ff; display: flex; align-items: center; justify-content: center;
+    }
+    .feature .ico svg { width: 26px; height: 26px; stroke: url(#fgrad); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .feature h3 { font-size: 1.18rem; font-weight: 700; margin-bottom: 8px; }
+    .feature p { font-size: 0.96rem; color: var(--t2); }
+
+    /* ── How it works ── */
+    .how { background: var(--surface); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; counter-reset: step; }
+    .step { text-align: center; }
+    .step .num {
+      width: 52px; height: 52px; margin: 0 auto 18px; border-radius: 50%;
+      background: var(--grad); color: #fff; font-size: 1.3rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 18px rgba(123,0,255,0.30);
+    }
+    .step h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 0.96rem; color: var(--t2); }
+
+    /* ── CTA banner ── */
+    .cta-banner {
+      margin: 80px auto; max-width: 920px; border-radius: 28px;
+      background: var(--grad); padding: 60px 32px; text-align: center; color: #fff;
+      box-shadow: 0 24px 60px rgba(123,0,255,0.32);
+    }
+    .cta-banner h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .cta-banner p { font-size: 1.1rem; opacity: 0.92; max-width: 520px; margin: 0 auto 30px; }
+    .cta-banner a {
+      display: inline-block; padding: 15px 38px; font-size: 1.05rem; font-weight: 700;
+      color: var(--purple); background: #fff; border-radius: 13px; text-decoration: none;
+      transition: transform 0.15s ease;
+    }
+    .cta-banner a:hover { transform: translateY(-2px); }
+
+    /* ── Footer ── */
+    footer { padding: 44px 0; border-top: 1px solid var(--border); }
+    .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .foot .brand span { font-size: 1.1rem; }
+    .foot .copy { font-size: 0.85rem; color: var(--t3); }
+
+    @media (max-width: 760px) {
+      .features, .steps { grid-template-columns: 1fr; }
+      .hero { padding: 60px 0 48px; }
+      section.block { padding: 56px 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- shared gradient defs for inline SVG strokes -->
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <linearGradient id="fgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B00FF"/><stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B00FF"/><stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient>
+  </defs></svg>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top">
+        <svg class="brand-logo" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
+        <span>Tally</span>
+      </a>
+      <span class="nav-soon">Coming soon</span>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero wrap">
+      <span class="pill">Honest tracking, zero guilt</span>
+      <h1>Track what you eat<br>in <span class="grad">a single tap.</span></h1>
+      <p class="lead">
+        Tally is the effortless calorie tracker. Snap a photo or just say what you had —
+        Tally gives you an honest estimate and tells you exactly what's left to hit your goal today.
+        No tedious searching. No fake precision. No guilt.
+      </p>
+      <div class="hero-actions">
+        <span class="btn-primary soon">Coming soon</span>
+        <a class="btn-ghost" href="#how">See how it works</a>
+      </div>
+
+      <!-- Phone preview -->
+      <div class="device-row">
+        <div class="phone">
+          <div class="phone-screen">
+            <!-- Date card -->
+            <div class="ps-card">
+              <div class="ps-datehead">
+                <span class="ps-nav">‹</span>
+                <div style="text-align:center;flex:1;">
+                  <div class="ps-day">Today</div>
+                  <div class="ps-date">Tuesday, June 10</div>
+                </div>
+                <span class="ps-nav" style="visibility:hidden;">›</span>
+              </div>
+            </div>
+            <!-- Calories left to Tally -->
+            <div class="ps-card">
+              <div class="ps-toprow">
+                <span class="ps-lbl">Calories Left to Tally</span>
+                <span class="ps-week">On track this week</span>
+              </div>
+              <div class="ps-big">820</div>
+              <div class="ps-sub">1,130 eaten &nbsp;·&nbsp; 1,950 cal target</div>
+              <div class="ps-bar"><div class="ps-fill" style="width:58%"></div></div>
+              <div class="ps-macro">
+                <div class="ps-macro-top"><span class="nm">Protein</span><span class="lf">41g left</span></div>
+                <div class="ps-bar thin"><div class="ps-fill" style="width:68%"></div></div>
+              </div>
+              <span class="ps-calc">How is this calculated?</span>
+            </div>
+            <!-- Today's Tally -->
+            <div class="ps-card">
+              <div class="ps-lbl">Today's Tally</div>
+              <div class="ps-totals">1,130 cal &nbsp;·&nbsp; 89g protein</div>
+              <div style="margin-top:6px;">
+                <div class="ps-mealrow">
+                  <div><div class="ps-meal-label">Breakfast</div><div class="ps-meal-macros"><span class="c">340 cal</span> &nbsp;·&nbsp; 26g protein</div></div>
+                  <span class="ps-chev">▾</span>
+                </div>
+                <div class="ps-mealrow">
+                  <div><div class="ps-meal-label">Lunch</div><div class="ps-meal-macros"><span class="c">630 cal</span> &nbsp;·&nbsp; 52g protein</div></div>
+                  <span class="ps-chev">▾</span>
+                </div>
+                <div class="ps-mealrow">
+                  <div><div class="ps-meal-label">Snacks</div><div class="ps-meal-macros"><span class="c">160 cal</span> &nbsp;·&nbsp; 11g protein</div></div>
+                  <span class="ps-chev">▾</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="block wrap" id="features">
+      <div class="section-head">
+        <h2>Built for real life, not spreadsheets</h2>
+        <p>Most trackers make you work. Tally does the work for you — and gets out of the way.</p>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h1l1-2h6l1 2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.2"/></svg></div>
+          <h3>Snap a photo</h3>
+          <p>Point your camera at a plate, a label, or a packaged item. Tally reads it and logs it — one capture, done.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div>
+          <h3>Just describe it</h3>
+          <p>Type or say "a turkey sandwich and a handful of chips." Tally breaks it into editable items with honest estimates.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
+          <h3>Real restaurant numbers</h3>
+          <p>Eating out? Tally pulls the official nutrition straight from the restaurant or brand — not a stale guess.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 20V10M6 20v-4M18 20V6"/></svg></div>
+          <h3>Know your day at a glance</h3>
+          <p>See what's <em>left</em> to hit your goal — calories and protein — so you can steer dinner, not just record it.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <h3>Honest, never obsessive</h3>
+          <p>A good estimate you'll actually keep beats perfect numbers you'll quit. Edit anything in seconds if you care to.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Never re-enter a meal</h3>
+          <p>Save the things you eat all the time and re-log them with a single tap tomorrow.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="block how" id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Logging a meal takes seconds</h2>
+          <p>Three ways in, one honest answer out.</p>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <h3>Capture or describe</h3>
+            <p>Snap a photo, or just tell Tally what you ate in plain words.</p>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <h3>Tally does the math</h3>
+            <p>It identifies the food, grounds it to official numbers when it can, and estimates the rest — honestly.</p>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <h3>Tap to log</h3>
+            <p>Confirm in one tap. Tweak anything you want. Watch your "left today" update instantly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-banner wrap">
+      <h2>Eat well. Track honestly.</h2>
+      <p>Tally makes staying on top of your goals feel effortless — the way it should be.</p>
+      <span class="soon" style="display:inline-block;padding:15px 38px;font-size:1.05rem;font-weight:700;color:var(--purple);background:#fff;border-radius:13px;">Coming soon</span>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <a class="brand" href="#top">
+        <svg class="brand-logo sm" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
+        <span>Tally</span>
+      </a>
+      <div class="copy">© 2026 Tally Applications · <a href="mailto:micahtarter@gmail.com" style="color:var(--t2);text-decoration:none">Contact</a></div>
+    </div>
+  </footer>
+</body>
+</html>
