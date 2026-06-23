@@ -222,7 +222,7 @@
         <svg class="brand-logo" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
         <span>Tally</span>
       </a>
-      <span class="nav-soon">Coming soon</span>
+      <button class="nav-cta" onclick="openSignup()">Start free trial</button>
     </div>
   </header>
 
@@ -237,7 +237,7 @@
         No tedious searching. No fake precision. No guilt.
       </p>
       <div class="hero-actions">
-        <span class="btn-primary soon">Coming soon</span>
+        <button class="btn-primary" onclick="openSignup()">Start your free trial</button>
         <a class="btn-ghost" href="#how">See how it works</a>
       </div>
 
@@ -366,7 +366,7 @@
     <div class="cta-banner wrap">
       <h2>Eat well. Track honestly.</h2>
       <p>Tally makes staying on top of your goals feel effortless — the way it should be.</p>
-      <span class="soon" style="display:inline-block;padding:15px 38px;font-size:1.05rem;font-weight:700;color:var(--purple);background:#fff;border-radius:13px;">Coming soon</span>
+      <button onclick="openSignup()" style="display:inline-block;padding:15px 38px;font-size:1.05rem;font-weight:700;color:var(--purple);background:#fff;border:none;border-radius:13px;font-family:inherit;cursor:pointer;">Start your free trial</button>
     </div>
   </main>
 
@@ -379,5 +379,79 @@
       <div class="copy">© 2026 Tally Applications · <a href="mailto:micahtarter@gmail.com" style="color:var(--t2);text-decoration:none">Contact</a></div>
     </div>
   </footer>
+
+  <!-- ── Signup funnel ── email magic-link → starts the cardless free trial → get the app ── -->
+  <div id="signup-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(20,0,40,0.55);align-items:center;justify-content:center;padding:22px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);">
+    <div style="background:#fff;border-radius:22px;max-width:400px;width:100%;padding:32px 26px;box-shadow:0 30px 80px rgba(0,0,0,0.35);position:relative;box-sizing:border-box;">
+      <button onclick="closeSignup()" aria-label="Close" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;color:#bbb;cursor:pointer;line-height:1;">&times;</button>
+
+      <div id="su-step-email">
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Start your free trial</div>
+        <div style="color:#666;font-size:0.95rem;margin-bottom:20px;">10 days free, no card needed. Enter your email and we&rsquo;ll send you a sign-in code.</div>
+        <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1rem;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suSendCode()">
+        <button id="su-send-btn" onclick="suSendCode()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Email me a code</button>
+      </div>
+
+      <div id="su-step-code" style="display:none;">
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Check your email</div>
+        <div style="color:#666;font-size:0.95rem;margin-bottom:20px;">We sent a 6-digit code to <b id="su-email-echo"></b>.</div>
+        <input id="su-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1.15rem;letter-spacing:0.22em;text-align:center;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suVerify()">
+        <button id="su-verify-btn" onclick="suVerify()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Verify &amp; start</button>
+      </div>
+
+      <div id="su-step-done" style="display:none;text-align:center;">
+        <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
+        <div style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your 10-day free trial has started &mdash; no card needed. Open Tally and sign in with this same email.</div>
+        <button onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;margin-bottom:12px;">Open Tally on the web</button>
+        <div style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
+      </div>
+
+      <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Funnel auth — reuses the SAME Supabase project + public anon key + worker as the app.
+    // Signing up here creates the account and starts the cardless trial (trial clock = signup
+    // date, server-side). Payment (add-card) is the next build; today this gets people INTO Tally.
+    var SB_URL = 'https://drawilglomwzyaxggwhx.supabase.co';
+    var SB_KEY = 'sb_publishable_mdGq4P2mcgcIMOm1Kfh_6g_f6u9cMEN';
+    var APP_URL = 'https://app.tallyapplications.com';
+    var _sb = null, _suEmail = '';
+    function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
+    function openSignup() { document.getElementById('signup-overlay').style.display = 'flex'; setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
+    function closeSignup() { document.getElementById('signup-overlay').style.display = 'none'; }
+    function openWebApp() { window.location.href = APP_URL; }
+    async function suSendCode() {
+      var email = (document.getElementById('su-email').value || '').trim().toLowerCase();
+      var err = document.getElementById('su-err');
+      if (!email || email.indexOf('@') < 1) { err.textContent = 'Please enter a valid email.'; return; }
+      var btn = document.getElementById('su-send-btn'); btn.disabled = true; btn.textContent = 'Sending…'; err.textContent = '';
+      try {
+        var r = await sb().auth.signInWithOtp({ email: email });
+        if (r.error) throw r.error;
+        _suEmail = email;
+        document.getElementById('su-email-echo').textContent = email;
+        document.getElementById('su-step-email').style.display = 'none';
+        document.getElementById('su-step-code').style.display = 'block';
+        document.getElementById('su-code').focus();
+      } catch (e) { err.textContent = (e && e.message) || 'Could not send the code. Try again.'; }
+      finally { btn.disabled = false; btn.textContent = 'Email me a code'; }
+    }
+    async function suVerify() {
+      var token = (document.getElementById('su-code').value || '').trim();
+      var err = document.getElementById('su-err');
+      if (token.length < 6) { err.textContent = 'Enter the 6-digit code from your email.'; return; }
+      var btn = document.getElementById('su-verify-btn'); btn.disabled = true; btn.textContent = 'Verifying…'; err.textContent = '';
+      try {
+        var r = await sb().auth.verifyOtp({ email: _suEmail, token: token, type: 'email' });
+        if (r.error) throw r.error;
+        document.getElementById('su-step-code').style.display = 'none';
+        document.getElementById('su-step-done').style.display = 'block';
+      } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btn.textContent = 'Verify & start'; }
+    }
+  </script>
 </body>
 </html>
