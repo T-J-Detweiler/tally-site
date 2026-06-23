@@ -407,23 +407,64 @@
         <div style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
       </div>
 
+      <div id="su-step-plan" style="display:none;">
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Choose your plan</div>
+        <div style="color:#666;font-size:0.95rem;margin-bottom:18px;">Keep tallying. Cancel anytime.</div>
+        <button id="su-plan-annual" onclick="suPickPlan('annual')" style="display:block;width:100%;text-align:left;padding:14px 16px;border:2px solid #7B00FF;background:#fdf4ff;border-radius:13px;font-family:inherit;cursor:pointer;margin-bottom:10px;">
+          <div style="font-weight:800;font-size:1.02rem;color:#222;">Annual &mdash; $99.99<span style="font-weight:600;color:#888;font-size:0.85rem;">/yr</span></div>
+          <div style="font-size:0.8rem;color:#7B00FF;font-weight:700;margin-top:2px;">Best value &middot; about 2 months free</div>
+        </button>
+        <button id="su-plan-monthly" onclick="suPickPlan('monthly')" style="display:block;width:100%;text-align:left;padding:14px 16px;border:2px solid #e3e3e3;background:#fff;border-radius:13px;font-family:inherit;cursor:pointer;margin-bottom:16px;">
+          <div style="font-weight:800;font-size:1.02rem;color:#222;">Monthly &mdash; $14.99<span style="font-weight:600;color:#888;font-size:0.85rem;">/mo</span></div>
+        </button>
+        <button onclick="suToCard()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Continue</button>
+      </div>
+
+      <div id="su-step-card" style="display:none;">
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:4px;">Add your card</div>
+        <div id="su-plan-line" style="color:#666;font-size:0.9rem;margin-bottom:16px;"></div>
+        <div id="su-payment-element" style="margin-bottom:12px;"></div>
+        <div id="su-card-loader" style="text-align:center;color:#999;font-size:0.9rem;padding:18px;">Loading secure checkout&hellip;</div>
+        <button id="su-pay-btn" onclick="suSubmitCard()" disabled style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Subscribe</button>
+        <div style="text-align:center;color:#aaa;font-size:0.78rem;margin-top:10px;">Secured by Stripe &middot; cancel anytime</div>
+      </div>
+
+      <div id="su-step-subscribed" style="display:none;text-align:center;">
+        <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re subscribed</div>
+        <div style="color:#666;font-size:0.95rem;margin-bottom:22px;">Thanks for going Tally. Open the app and keep going.</div>
+        <button onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Open Tally on the web</button>
+      </div>
+
       <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Funnel auth — reuses the SAME Supabase project + public anon key + worker as the app.
-    // Signing up here creates the account and starts the cardless trial (trial clock = signup
-    // date, server-side). Payment (add-card) is the next build; today this gets people INTO Tally.
+    // Funnel — the SEPARATE-ORIGIN home for ALL signup + payment (reader model). Reuses the same
+    // Supabase project, public keys, and worker as the app. Two intents:
+    //   trial    → email magic-link → account + cardless trial → "open the app".
+    //   subscribe→ (log in if needed) → pick plan → Stripe card → /create-subscription → done.
     var SB_URL = 'https://drawilglomwzyaxggwhx.supabase.co';
     var SB_KEY = 'sb_publishable_mdGq4P2mcgcIMOm1Kfh_6g_f6u9cMEN';
+    var STRIPE_PK = 'pk_live_51TgrC2A1BiF94G1nP83P82NxyMPEQo1O9ZxpmxdE17a2dAa4P90hQawOUZf5qeMHN95aJ7qLf45jYqAfoWLG4zKR00W3Cr7aXL';
+    var WORKER = 'https://tally-gemini.micahtarter.workers.dev';
     var APP_URL = 'https://app.tallyapplications.com';
-    var _sb = null, _suEmail = '';
+    var _sb = null, _suEmail = '', _intent = 'trial', _user = null, _plan = 'annual', _stripe = null, _elements = null;
     function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
-    function openSignup() { document.getElementById('signup-overlay').style.display = 'flex'; setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
-    function closeSignup() { document.getElementById('signup-overlay').style.display = 'none'; }
     function openWebApp() { window.location.href = APP_URL; }
+    function suHideSteps() { ['email','code','done','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
+    function suShow(step) { suHideSteps(); var e = document.getElementById('su-step-' + step); if (e) e.style.display = 'block'; }
+    function closeSignup() { document.getElementById('signup-overlay').style.display = 'none'; }
+
+    function openSignup() { _intent = 'trial'; document.getElementById('signup-overlay').style.display = 'flex'; suShow('email'); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
+    async function openSubscribe() {
+      _intent = 'subscribe'; document.getElementById('signup-overlay').style.display = 'flex'; suHideSteps();
+      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) { var u = await sb().auth.getUser(); _user = u.data && u.data.user; if (_user) { suShowPlan(); return; } } } catch (_) {}
+      suShow('email'); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60);
+    }
+
     async function suSendCode() {
       var email = (document.getElementById('su-email').value || '').trim().toLowerCase();
       var err = document.getElementById('su-err');
@@ -434,9 +475,7 @@
         if (r.error) throw r.error;
         _suEmail = email;
         document.getElementById('su-email-echo').textContent = email;
-        document.getElementById('su-step-email').style.display = 'none';
-        document.getElementById('su-step-code').style.display = 'block';
-        document.getElementById('su-code').focus();
+        suShow('code'); document.getElementById('su-code').focus();
       } catch (e) { err.textContent = (e && e.message) || 'Could not send the code. Try again.'; }
       finally { btn.disabled = false; btn.textContent = 'Email me a code'; }
     }
@@ -448,10 +487,79 @@
       try {
         var r = await sb().auth.verifyOtp({ email: _suEmail, token: token, type: 'email' });
         if (r.error) throw r.error;
-        document.getElementById('su-step-code').style.display = 'none';
-        document.getElementById('su-step-done').style.display = 'block';
+        try { var u = await sb().auth.getUser(); _user = u.data && u.data.user; } catch (_) {}
+        if (_intent === 'subscribe') suShowPlan(); else suShow('done');
       } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btn.textContent = 'Verify & start'; }
     }
+
+    // ── Subscribe (Stripe) ──
+    function suShowPlan() { suShow('plan'); suPickPlan('annual'); }
+    function suPickPlan(p) {
+      _plan = p;
+      var a = document.getElementById('su-plan-annual'), m = document.getElementById('su-plan-monthly');
+      a.style.borderColor = p === 'annual' ? '#7B00FF' : '#e3e3e3'; a.style.background = p === 'annual' ? '#fdf4ff' : '#fff';
+      m.style.borderColor = p === 'monthly' ? '#7B00FF' : '#e3e3e3'; m.style.background = p === 'monthly' ? '#fdf4ff' : '#fff';
+    }
+    function loadStripe() { return new Promise(function(res, rej){ if (window.Stripe) return res(); var s = document.createElement('script'); s.src = 'https://js.stripe.com/v3/'; s.onload = res; s.onerror = function(){ rej(new Error('Could not load the payment library.')); }; document.head.appendChild(s); }); }
+    async function suToCard() {
+      if (!_user) { suShow('email'); return; }
+      suShow('card');
+      document.getElementById('su-plan-line').textContent = _plan === 'annual' ? 'Annual — $99.99/yr · billed today' : 'Monthly — $14.99/mo · billed today';
+      var loader = document.getElementById('su-card-loader'), btn = document.getElementById('su-pay-btn');
+      loader.style.display = ''; document.getElementById('su-payment-element').innerHTML = ''; btn.disabled = true;
+      try {
+        var res = await Promise.all([
+          loadStripe(),
+          fetch(WORKER + '/setup-intent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: _user.id, email: _user.email }) }).then(function(r){ return r.json(); })
+        ]);
+        var d = res[1];
+        if (!d || !d.clientSecret) throw new Error((d && d.error) || 'Could not start checkout.');
+        _stripe = Stripe(STRIPE_PK);
+        _elements = _stripe.elements({ clientSecret: d.clientSecret, appearance: { theme: 'stripe', variables: { colorPrimary: '#7B00FF', borderRadius: '10px' } } });
+        var el = _elements.create('payment');
+        el.on('ready', function(){ loader.style.display = 'none'; btn.disabled = false; });
+        el.mount('#su-payment-element');
+      } catch (e) { loader.textContent = (e && e.message) || 'Could not start checkout. Try again.'; }
+    }
+    async function suSubmitCard() {
+      var err = document.getElementById('su-err'), btn = document.getElementById('su-pay-btn');
+      if (!_stripe || !_elements) return;
+      btn.disabled = true; btn.textContent = 'Subscribing…'; err.textContent = '';
+      try { localStorage.setItem('_funnelPlan', _plan); } catch (_) {}
+      try {
+        var cs = await _stripe.confirmSetup({ elements: _elements, confirmParams: { return_url: 'https://tallyapplications.com/?subscribe_return=1' }, redirect: 'if_required' });
+        if (cs.error) throw new Error(cs.error.message || 'Your card could not be saved.');
+        if (!cs.setupIntent || cs.setupIntent.status !== 'succeeded') throw new Error('Card setup did not complete.');
+        await suCreateSub(cs.setupIntent.payment_method, _plan);
+        suShow('subscribed');
+      } catch (e) { err.textContent = (e && e.message) || 'Something went wrong. Try again.'; btn.disabled = false; btn.textContent = 'Subscribe'; }
+    }
+    async function suCreateSub(paymentMethodId, plan) {
+      var r = await fetch(WORKER + '/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: _user.id, email: _user.email, plan: plan, paymentMethodId: paymentMethodId }) });
+      var d = await r.json();
+      if (!r.ok || !d.ok) throw new Error((d && d.error) || 'Could not start your subscription.');
+    }
+
+    // On return from a 3-D Secure redirect: retrieve the SetupIntent, finish the subscription.
+    (async function(){
+      try {
+        var p = new URLSearchParams(location.search);
+        if (p.get('subscribe_return') === '1' && p.get('setup_intent_client_secret')) {
+          document.getElementById('signup-overlay').style.display = 'flex'; suShow('card');
+          document.getElementById('su-card-loader').textContent = 'Finishing your subscription…';
+          document.getElementById('su-pay-btn').style.display = 'none';
+          await loadStripe(); _stripe = Stripe(STRIPE_PK);
+          var u = await sb().auth.getUser(); _user = u.data && u.data.user;
+          var si = await _stripe.retrieveSetupIntent(p.get('setup_intent_client_secret'));
+          var plan = 'annual'; try { plan = localStorage.getItem('_funnelPlan') || 'annual'; } catch (_) {}
+          if (si.setupIntent && si.setupIntent.status === 'succeeded' && _user) { await suCreateSub(si.setupIntent.payment_method, plan); suShow('subscribed'); }
+          else { document.getElementById('su-err').textContent = 'Payment was not completed. Please try again.'; suShow('plan'); }
+          return;
+        }
+        if (p.get('subscribe') === '1') setTimeout(openSubscribe, 200);
+      } catch (_) {}
+    })();
   </script>
 </body>
 </html>
