@@ -565,7 +565,10 @@
           else { document.getElementById('su-err').textContent = 'Payment was not completed. Please try again.'; suShow('plan'); }
           return;
         }
-        if (p.get('subscribe') === '1') setTimeout(openSubscribe, 200);
+        if (p.get('subscribe') === '1') {
+          var em = p.get('email'); if (em) { try { var ei = document.getElementById('su-email'); if (ei) ei.value = em; } catch (_) {} }
+          setTimeout(openSubscribe, 200);
+        }
       } catch (_) {}
     })();
   </script>
