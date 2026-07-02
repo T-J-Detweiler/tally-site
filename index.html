@@ -577,7 +577,11 @@
           // so the person lands already signed in, straight at the plans — no second email
           // code just to pay. Expired/used token → falls through to the email step, prefilled.
           var ht = p.get('ht');
-          if (ht) { try { await sb().auth.verifyOtp({ type: 'magiclink', token_hash: ht }); } catch (_) {} }
+          if (ht) {
+            // supabase-js versions differ on which type they accept for token_hash — try both.
+            try { await sb().auth.verifyOtp({ type: 'magiclink', token_hash: ht }); } catch (_) {}
+            try { var s0 = await sb().auth.getSession(); if (!(s0.data && s0.data.session)) await sb().auth.verifyOtp({ type: 'email', token_hash: ht }); } catch (_) {}
+          }
           setTimeout(openSubscribe, 200);
         }
       } catch (_) {}
