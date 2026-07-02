@@ -413,14 +413,14 @@
         <div style="display:flex;gap:10px;margin-bottom:18px;">
           <div id="su-plan-monthly" onclick="suPickPlan('monthly')" style="flex:1;border:2px solid #e3e3e3;background:#fff;border-radius:14px;padding:18px 10px 14px;text-align:center;cursor:pointer;">
             <div style="font-size:0.66rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.05em;">Monthly</div>
-            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$14.99<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
+            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$19.99<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
             <div style="font-size:0.72rem;color:#999;">billed monthly</div>
           </div>
           <div id="su-plan-annual" onclick="suPickPlan('annual')" style="flex:1;border:2px solid #7B00FF;background:#fdf4ff;border-radius:14px;padding:18px 10px 14px;text-align:center;cursor:pointer;position:relative;">
-            <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;font-size:0.6rem;font-weight:800;padding:2px 9px;border-radius:999px;white-space:nowrap;letter-spacing:0.03em;">SAVE 44%</div>
+            <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;font-size:0.6rem;font-weight:800;padding:2px 9px;border-radius:999px;white-space:nowrap;letter-spacing:0.03em;">SAVE 46%</div>
             <div style="font-size:0.66rem;font-weight:700;color:#7B00FF;text-transform:uppercase;letter-spacing:0.05em;">Annual</div>
-            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$8.33<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
-            <div style="font-size:0.72rem;color:#999;">billed $99.99/yr</div>
+            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$10.83<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
+            <div style="font-size:0.72rem;color:#999;">billed $129.99/yr</div>
           </div>
         </div>
         <button onclick="suToCard()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Continue</button>
@@ -517,7 +517,7 @@
     async function suToCard() {
       if (!_user) { suShow('email'); return; }
       suShow('card');
-      document.getElementById('su-plan-line').textContent = _plan === 'annual' ? 'Annual — $99.99/yr · billed today' : 'Monthly — $14.99/mo · billed today';
+      document.getElementById('su-plan-line').textContent = _plan === 'annual' ? 'Annual — $129.99/yr · billed today' : 'Monthly — $19.99/mo · billed today';
       var loader = document.getElementById('su-card-loader'), btn = document.getElementById('su-pay-btn');
       loader.style.display = ''; document.getElementById('su-payment-element').innerHTML = ''; btn.disabled = true;
       try {
