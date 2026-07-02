@@ -573,6 +573,11 @@
         }
         if (p.get('subscribe') === '1') {
           var em = p.get('email'); if (em) { try { var ei = document.getElementById('su-email'); if (ei) ei.value = em; } catch (_) {} }
+          // One-time sign-in handoff from the app (?ht=): redeem the single-use token silently
+          // so the person lands already signed in, straight at the plans — no second email
+          // code just to pay. Expired/used token → falls through to the email step, prefilled.
+          var ht = p.get('ht');
+          if (ht) { try { await sb().auth.verifyOtp({ type: 'magiclink', token_hash: ht }); } catch (_) {} }
           setTimeout(openSubscribe, 200);
         }
       } catch (_) {}
