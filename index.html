@@ -578,11 +578,29 @@
           // code just to pay. Expired/used token → falls through to the email step, prefilled.
           var ht = p.get('ht');
           if (ht) {
-            // supabase-js versions differ on which type they accept for token_hash — try both.
-            try { await sb().auth.verifyOtp({ type: 'magiclink', token_hash: ht }); } catch (_) {}
-            try { var s0 = await sb().auth.getSession(); if (!(s0.data && s0.data.session)) await sb().auth.verifyOtp({ type: 'email', token_hash: ht }); } catch (_) {}
+            // supabase-js versions differ on which type they accept for token_hash — try both,
+            // and REMEMBER any error so it can be shown (a silently-swallowed redemption
+            // failure cost us a debugging round already).
+            window._htErr = '';
+            try {
+              var v1 = await sb().auth.verifyOtp({ type: 'magiclink', token_hash: ht });
+              if (v1 && v1.error) window._htErr = v1.error.message || 'magiclink verify failed';
+            } catch (e1) { window._htErr = (e1 && e1.message) || 'magiclink verify threw'; }
+            try {
+              var s0 = await sb().auth.getSession();
+              if (s0.data && s0.data.session) { window._htErr = ''; }
+              else {
+                var v2 = await sb().auth.verifyOtp({ type: 'email', token_hash: ht });
+                if (v2 && v2.error) window._htErr += ' / ' + (v2.error.message || 'email verify failed');
+                else window._htErr = '';
+              }
+            } catch (e2) { window._htErr += ' / ' + ((e2 && e2.message) || 'email verify threw'); }
           }
           setTimeout(openSubscribe, 200);
+          // Surface a redemption failure on the sign-in sheet (after openSubscribe has drawn it).
+          setTimeout(function(){
+            if (window._htErr) { var er = document.getElementById('su-err'); if (er) er.textContent = 'Sign-in handoff: ' + window._htErr; }
+          }, 700);
         }
       } catch (_) {}
     })();
