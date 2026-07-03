@@ -661,8 +661,10 @@
       await ensureRefData();
       openSignup();
       try {
-        document.getElementById('su-email-title').textContent = 'Claim your free trial';
-        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed. Create your account and your discount stays attached for checkout.';
+        // Only promise a discount when the affiliate actually carries one — an affiliate
+        // with no tracking coupon is commission-only and their visitors pay sticker.
+        document.getElementById('su-email-title').textContent = window._refCoupon ? 'Claim your free trial' : 'Start your free trial';
+        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed.' + (window._refCoupon ? ' Create your account and your discount stays attached for checkout.' : ' Enter your email and we’ll send you a sign-in code.');
         showRefChip();
       } catch (_) {}
     })();
