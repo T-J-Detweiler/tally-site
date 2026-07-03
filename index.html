@@ -412,9 +412,9 @@
       <div id="su-step-done" style="display:none;text-align:center;">
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
-        <div style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your 5-day free trial has started &mdash; no card needed. Open Tally and sign in with this same email.</div>
-        <button onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;margin-bottom:12px;">Open Tally on the web</button>
-        <div style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
+        <div id="su-done-sub" style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your 5-day free trial has started. No card needed. Sign in to Tally with this same email.</div>
+        <button id="su-done-primary" onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;margin-bottom:12px;">Open Tally</button>
+        <div id="su-done-note" style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
       </div>
 
       <div id="su-step-plan" style="display:none;">
@@ -502,17 +502,43 @@
         box.value = ref.toUpperCase();
         var note = document.getElementById('su-promo-note');
         if (!note) { note = document.createElement('div'); note.id = 'su-promo-note'; note.style.cssText = 'font-size:0.8rem;color:#7B00FF;font-weight:600;margin:-6px 0 12px;'; box.parentNode.insertBefore(note, box.nextSibling); }
-        note.textContent = 'Your code ' + ref.toUpperCase() + ' is attached — the discount applies when you subscribe.';
+        note.textContent = 'Your code ' + ref.toUpperCase() + ' is attached. The discount applies when you subscribe.';
       } catch (_) {}
     }
-    (function refBanner() {
+    // Store links — set the moment each approval lands; while empty, the web app is the path.
+    var STORE_IOS = '';
+    var STORE_ANDROID = '';
+    // "You're in" step, routed by device: this is ultimately an iPhone app — phones get the
+    // store download as the headline, desktop keeps a "continue on desktop" path.
+    function renderDone() {
+      try {
+        var ua = navigator.userAgent || '';
+        var ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
+        var btn = document.getElementById('su-done-primary'), note = document.getElementById('su-done-note'), sub = document.getElementById('su-done-sub');
+        if (window._refName) sub.textContent = 'Your 5-day free trial has started. No card needed, and ' + window._refName + '’s discount stays attached to your account for checkout.';
+        if (ios && STORE_IOS) { btn.textContent = 'Download Tally on the App Store'; btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
+        else if (android && STORE_ANDROID) { btn.textContent = 'Get Tally on Google Play'; btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
+        else if (!ios && !android && (STORE_IOS || STORE_ANDROID)) { btn.textContent = 'Continue on desktop'; note.textContent = 'Tally is also on your phone, on the App Store and Google Play.'; }
+        else { btn.textContent = 'Open Tally'; note.textContent = 'The Tally app hits the App Store and Google Play any day now. Until then, Tally runs right here on the web.'; }
+      } catch (_) {}
+    }
+    // Referred arrivals skip the brochure: greet them by their creator's name and drop them
+    // straight into account creation, discount attached. Name comes from the worker's FP
+    // lookup; until the FP API key is configured it falls back to a neutral invite line.
+    (async function refWelcome() {
       var ref = fpRef();
       if (!ref) return;
+      window._refName = '';
+      try { var r = await fetch(WORKER + '/promoter-info?ref=' + encodeURIComponent(ref)); var d = await r.json(); window._refName = (d && d.name) || ''; } catch (_) {}
       var b = document.createElement('div');
       b.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;text-align:center;padding:10px 16px;font-size:0.92rem;font-weight:700;';
-      b.textContent = ref.toUpperCase() + ' sent you — your discount is attached and applies at checkout.';
-      function mount() { document.body.insertBefore(b, document.body.firstChild); }
-      if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
+      b.textContent = window._refName ? (window._refName + ' sent you. Your discount is attached and applies at checkout.') : 'Your invite is active. Your discount is attached and applies at checkout.';
+      document.body.insertBefore(b, document.body.firstChild);
+      openSignup();
+      try {
+        document.getElementById('su-email-title').textContent = 'Claim your free trial';
+        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed. Create your account and your discount stays attached for checkout.';
+      } catch (_) {}
     })();
     function openWebApp() { window.location.href = APP_URL; }
     function suHideSteps() { ['email','code','done','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
@@ -556,7 +582,7 @@
         if (r.error) throw r.error;
         try { var u = await sb().auth.getUser(); _user = u.data && u.data.user; } catch (_) {}
         fpReferral();
-        if (_intent === 'subscribe') suShowPlan(); else suShow('done');
+        if (_intent === 'subscribe') suShowPlan(); else { suShow('done'); renderDone(); }
       } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btn.textContent = 'Verify & start'; }
     }
 
