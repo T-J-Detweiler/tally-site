@@ -471,9 +471,49 @@
     var APP_URL = 'https://app.tallyapplications.com';
     var _sb = null, _suEmail = '', _intent = 'trial', _user = null, _plan = 'annual', _stripe = null, _elements = null;
     function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
-    // Tell FirstPromoter who just signed in/up (email match — the backup attribution thread to
-    // the checkout's fpTid metadata). Safe no-op if FP hasn't loaded or the visitor wasn't referred.
-    function fpReferral() { try { if (window.fpr && _user && _user.email) fpr("referral", { email: _user.email, uid: _user.id }); } catch (_) {} }
+    // Club Tally referral plumbing. The FP script leaves two cookies: _fprom_ref (the creator's
+    // code) and _fprom_tid (the click id). Cookies die with the browser, so at sign-in we PIN the
+    // referral to the account via the worker (/referral-attach) — from then on the discount and
+    // the commission follow the ACCOUNT, any device, any browser.
+    function fpCookie(name) { try { var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)')); return m ? decodeURIComponent(m[1]) : ''; } catch (_) { return ''; } }
+    function fpRef() { return fpCookie('_fprom_ref') || (new URLSearchParams(location.search).get('fpr') || ''); }
+    function fpReferral() {
+      try { if (window.fpr && _user && _user.email) fpr("referral", { email: _user.email, uid: _user.id }); } catch (_) {}
+      try {
+        var ref = fpRef();
+        if (ref && _user) fetch(WORKER + '/referral-attach', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: _user.id, ref: ref, tid: fpCookie('_fprom_tid') }) }).catch(function(){});
+      } catch (_) {}
+    }
+    // Referred visitors get greeted, and their code is pre-applied at checkout — the discount
+    // must never be a hidden easter egg. Prefill sources: live cookie first, then the account
+    // pin (covers "signed up on the phone, subscribing on the laptop").
+    async function accountRef() {
+      var ref = fpRef();
+      if (!ref && _user) { try { var r = await fetch(WORKER + '/referral-info?userId=' + encodeURIComponent(_user.id)); var d = await r.json(); ref = (d && d.ref) || ''; } catch (_) {} }
+      return ref;
+    }
+    async function prefillPromo() {
+      try {
+        var box = document.getElementById('su-promo');
+        if (!box || box.value) return;
+        var ref = await accountRef();
+        if (!ref) return;
+        box.value = ref.toUpperCase();
+        var note = document.getElementById('su-promo-note');
+        if (!note) { note = document.createElement('div'); note.id = 'su-promo-note'; note.style.cssText = 'font-size:0.8rem;color:#7B00FF;font-weight:600;margin:-6px 0 12px;'; box.parentNode.insertBefore(note, box.nextSibling); }
+        note.textContent = 'Your code ' + ref.toUpperCase() + ' is attached — the discount applies when you subscribe.';
+      } catch (_) {}
+    }
+    (function refBanner() {
+      var ref = fpRef();
+      if (!ref) return;
+      var b = document.createElement('div');
+      b.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;text-align:center;padding:10px 16px;font-size:0.92rem;font-weight:700;';
+      b.textContent = ref.toUpperCase() + ' sent you — your discount is attached and applies at checkout.';
+      function mount() { document.body.insertBefore(b, document.body.firstChild); }
+      if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
+    })();
     function openWebApp() { window.location.href = APP_URL; }
     function suHideSteps() { ['email','code','done','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
     function suShow(step) { suHideSteps(); var e = document.getElementById('su-step-' + step); if (e) e.style.display = 'block'; }
@@ -521,7 +561,7 @@
     }
 
     // ── Subscribe (Stripe) ──
-    function suShowPlan() { suShow('plan'); suPickPlan('annual'); }
+    function suShowPlan() { suShow('plan'); suPickPlan('annual'); prefillPromo(); }
     function suPickPlan(p) {
       _plan = p;
       var a = document.getElementById('su-plan-annual'), m = document.getElementById('su-plan-monthly');
