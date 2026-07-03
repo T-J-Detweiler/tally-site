@@ -543,7 +543,7 @@
         await ensureRefData();
         var box = document.getElementById('su-promo');
         if (!box) return;
-        if (!box.value && window._refCoupon) box.value = window._refCoupon;
+        if (!box.value && window._refCoupon) { box.value = window._refCoupon; window._prefilledCode = window._refCoupon; }
         suCheckPromo();
       } catch (_) {}
     }
@@ -624,6 +624,13 @@
           var dur = d.duration === 'forever' ? 'every bill.' : d.duration === 'repeating' ? 'your first ' + d.durationMonths + ' months.' : 'your first bill.';
           note.style.color = '#7B00FF';
           note.textContent = 'Code ' + code.toUpperCase() + ' applied: ' + what + ' ' + dur;
+        } else if (code === window._prefilledCode) {
+          // A PREFILLED code that turns out dead (stale FP tracking coupon, deleted Stripe
+          // coupon) is our mess, not the customer's — clear it silently, show clean sticker
+          // pricing, never a red error or a blocked Subscribe for a box they didn't touch.
+          box.value = '';
+          window._prefilledCode = '';
+          note.textContent = '';
         } else {
           note.style.color = '#d6336c';
           note.textContent = 'That code doesn’t look right. Check it and try again.';
