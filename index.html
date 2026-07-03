@@ -549,9 +549,13 @@
         suShow('subscribed');
       } catch (e) { err.textContent = (e && e.message) || 'Something went wrong. Try again.'; btn.disabled = false; btn.textContent = 'Subscribe'; }
     }
+    // FirstPromoter referral id: the FP tracking script sets a _fprom_tid cookie when someone
+    // arrives through an affiliate link (?fpr=CODE). If it's there at checkout, it rides along
+    // to the worker → Stripe metadata, and FP credits the referring Club Tally member.
+    function fpTid() { try { var m = document.cookie.match(/(?:^|; )_fprom_tid=([^;]+)/); return m ? decodeURIComponent(m[1]) : undefined; } catch (_) { return undefined; } }
     async function suCreateSub(paymentMethodId, plan, promoCode) {
       var r = await fetch(WORKER + '/create-subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: _user.id, email: _user.email, plan: plan, paymentMethodId: paymentMethodId, promoCode: promoCode || undefined }) });
+        body: JSON.stringify({ userId: _user.id, email: _user.email, plan: plan, paymentMethodId: paymentMethodId, promoCode: promoCode || undefined, fpTid: fpTid() }) });
       var d = await r.json();
       if (!r.ok || !d.ok) throw new Error((d && d.error) || 'Could not start your subscription.');
     }
