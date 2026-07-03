@@ -438,7 +438,7 @@
             <div style="font-size:0.72rem;color:#999;">billed $129.99/yr</div>
           </div>
         </div>
-        <div style="font-size:0.82rem;color:#888;text-align:center;margin:-4px 0 14px;">Have a promo code? You&rsquo;ll enter it at checkout, right before you pay.</div>
+        <div id="su-plan-promo-hint" style="font-size:0.82rem;color:#888;text-align:center;margin:-4px 0 14px;">Have a promo code? You&rsquo;ll enter it at checkout, right before you pay.</div>
         <button onclick="suToCard()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Continue</button>
       </div>
 
@@ -490,26 +490,83 @@
           body: JSON.stringify({ userId: _user.id, ref: ref, tid: fpCookie('_fprom_tid') }) }).catch(function(){});
       } catch (_) {}
     }
-    // Referred visitors get greeted, and their code is pre-applied at checkout — the discount
-    // must never be a hidden easter egg. Prefill sources: live cookie first, then the account
-    // pin (covers "signed up on the phone, subscribing on the laptop").
+    // Referred visitors get greeted, and their creator's REAL coupon (from FP's own records,
+    // via /promoter-info) is pre-applied at checkout — the discount must never be a hidden
+    // easter egg. Ref sources: live cookie first, then the account pin (covers "signed up on
+    // the phone, subscribing on the laptop"). Every code is validated against Stripe LIVE and
+    // the price the user sees updates BEFORE they hit Subscribe.
     async function accountRef() {
       var ref = fpRef();
       if (!ref && _user) { try { var r = await fetch(WORKER + '/referral-info?userId=' + encodeURIComponent(_user.id)); var d = await r.json(); ref = (d && d.ref) || ''; } catch (_) {} }
       return ref;
     }
+    async function refInfo(ref) {
+      try { var r = await fetch(WORKER + '/promoter-info?ref=' + encodeURIComponent(ref)); return (await r.json()) || {}; } catch (_) { return {}; }
+    }
     async function prefillPromo() {
       try {
         var box = document.getElementById('su-promo');
-        if (!box || box.value) return;
-        var ref = await accountRef();
-        if (!ref) return;
-        box.value = ref.toUpperCase();
-        var note = document.getElementById('su-promo-note');
-        if (!note) { note = document.createElement('div'); note.id = 'su-promo-note'; note.style.cssText = 'font-size:0.8rem;color:#7B00FF;font-weight:600;margin:-6px 0 12px;'; box.parentNode.insertBefore(note, box.nextSibling); }
-        note.textContent = 'Your code ' + ref.toUpperCase() + ' is attached. The discount applies when you subscribe.';
+        if (!box) return;
+        if (!box.value) {
+          if (!window._refCoupon) {
+            var ref = await accountRef();
+            if (ref) { var i = await refInfo(ref); if (i.name && !window._refName) window._refName = i.name; if (i.coupon) window._refCoupon = i.coupon; }
+          }
+          if (window._refCoupon) box.value = window._refCoupon;
+        }
+        var hint = document.getElementById('su-plan-promo-hint');
+        if (hint && box.value) hint.textContent = 'Your code ' + box.value.toUpperCase() + ' is attached. You’ll see the discount before you pay.';
+        suCheckPromo();
       } catch (_) {}
     }
+    // The "billed today" line, discount-aware: strikethrough full price, real amount due,
+    // and what the code does. This is where the user KNOWS they're getting the deal.
+    function suPlanLine() {
+      var el = document.getElementById('su-plan-line');
+      if (!el) return;
+      var base = _plan === 'annual' ? 12999 : 1999;
+      var label = _plan === 'annual' ? 'Annual' : 'Monthly';
+      var per = _plan === 'annual' ? '/yr' : '/mo';
+      var p = window._promoInfo;
+      if (p && p.valid) {
+        var due = p.percentOff ? base * (100 - p.percentOff) / 100 : Math.max(0, base - (p.amountOff || 0));
+        var what = p.percentOff ? p.percentOff + '% off' : '$' + ((p.amountOff || 0) / 100).toFixed(2) + ' off';
+        var dur = p.duration === 'forever' ? 'every bill' : p.duration === 'repeating' ? 'your first ' + p.durationMonths + ' months' : 'your first bill';
+        el.innerHTML = label + ': <s style="color:#bbb;">$' + (base / 100).toFixed(2) + '</s> <b style="color:#222;">$' + (Math.round(due) / 100).toFixed(2) + per + '</b> billed today <span style="color:#7B00FF;font-weight:700;">(' + what + ' ' + dur + ')</span>';
+      } else {
+        el.textContent = label + ': $' + (base / 100).toFixed(2) + per + ' billed today';
+      }
+    }
+    var _promoT = null, _promoSeq = 0;
+    function suPromoChanged() { clearTimeout(_promoT); _promoT = setTimeout(suCheckPromo, 500); }
+    async function suCheckPromo() {
+      var box = document.getElementById('su-promo');
+      if (!box) return;
+      var note = document.getElementById('su-promo-note');
+      if (!note) { note = document.createElement('div'); note.id = 'su-promo-note'; note.style.cssText = 'font-size:0.8rem;font-weight:600;margin:-6px 0 12px;'; box.parentNode.insertBefore(note, box.nextSibling); }
+      var code = (box.value || '').trim();
+      var seq = ++_promoSeq;
+      window._promoInfo = null;
+      if (!code) { note.textContent = ''; suPlanLine(); return; }
+      note.style.color = '#999'; note.textContent = 'Checking your code…';
+      try {
+        var r = await fetch(WORKER + '/promo-check?code=' + encodeURIComponent(code));
+        var d = await r.json();
+        if (seq !== _promoSeq) return;
+        if (d && d.valid) {
+          window._promoInfo = d;
+          var what = d.percentOff ? d.percentOff + '% off' : '$' + ((d.amountOff || 0) / 100).toFixed(2) + ' off';
+          var dur = d.duration === 'forever' ? 'every bill.' : d.duration === 'repeating' ? 'your first ' + d.durationMonths + ' months.' : 'your first bill.';
+          note.style.color = '#7B00FF';
+          note.textContent = 'Code ' + code.toUpperCase() + ' applied: ' + what + ' ' + dur;
+        } else {
+          note.style.color = '#d6336c';
+          note.textContent = 'That code doesn’t look right. Check it and try again.';
+        }
+      } catch (_) { if (seq === _promoSeq) note.textContent = ''; }
+      suPlanLine();
+    }
+    (function () { var box = document.getElementById('su-promo'); if (box) box.addEventListener('input', suPromoChanged); })();
     // Store links — set the moment each approval lands; while empty, the web app is the path.
     var STORE_IOS = '';
     var STORE_ANDROID = '';
@@ -527,29 +584,31 @@
         else { btn.textContent = 'Open Tally'; note.textContent = 'The Tally app hits the App Store and Google Play any day now. Until then, Tally runs right here on the web.'; }
       } catch (_) {}
     }
-    // Referred arrivals skip the brochure: greet them by their creator's name and drop them
-    // straight into account creation, discount attached. Name comes from the worker's FP
-    // lookup; until the FP API key is configured it falls back to a neutral invite line.
+    // Referred arrivals skip the brochure: the signup sheet opens immediately with the
+    // creator's name and their discount already known (both from the worker's FP lookup).
+    // The greeting is a quiet house-style card ON the sheet (surface + gradient ring +
+    // gradient text, like the app's buttons) — informational, never button-shaped. No page
+    // banner: it sat behind the blurred overlay where nobody could read it.
     (async function refWelcome() {
       var ref = fpRef();
       if (!ref) return;
-      window._refName = '';
-      try { var r = await fetch(WORKER + '/promoter-info?ref=' + encodeURIComponent(ref)); var d = await r.json(); window._refName = (d && d.name) || ''; } catch (_) {}
-      var b = document.createElement('div');
-      b.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;text-align:center;padding:10px 16px;font-size:0.92rem;font-weight:700;';
-      b.textContent = window._refName ? (window._refName + ' sent you. Your discount is attached and applies at checkout.') : 'Your invite is active. Your discount is attached and applies at checkout.';
-      document.body.insertBefore(b, document.body.firstChild);
+      window._refName = ''; window._refCoupon = '';
+      var i = await refInfo(ref);
+      window._refName = i.name || '';
+      window._refCoupon = i.coupon || '';
       openSignup();
       try {
         document.getElementById('su-email-title').textContent = 'Claim your free trial';
         document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed. Create your account and your discount stays attached for checkout.';
-        // The greeting must live ON the sheet — the page banner sits behind the blurred overlay.
         var card = document.getElementById('su-step-email').parentNode;
         if (card && !document.getElementById('su-ref-chip')) {
           var chip = document.createElement('div');
           chip.id = 'su-ref-chip';
-          chip.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;border-radius:10px;padding:9px 14px;font-size:0.88rem;font-weight:700;text-align:center;margin-bottom:14px;';
-          chip.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
+          chip.style.cssText = 'background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#7B00FF,#FF006E) border-box;border:1.5px solid transparent;border-radius:12px;padding:10px 14px;font-size:0.9rem;font-weight:700;text-align:center;margin-bottom:14px;';
+          var span = document.createElement('span');
+          span.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;';
+          span.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
+          chip.appendChild(span);
           card.insertBefore(chip, card.firstChild);
         }
       } catch (_) {}
@@ -562,7 +621,7 @@
     function suSetEmailCopy() {
       var t = document.getElementById('su-email-title'), s = document.getElementById('su-email-sub');
       if (!t || !s) return;
-      if (_intent === 'subscribe') { t.textContent = 'Sign in to subscribe'; s.textContent = 'Enter your email and we’ll send a code to log in — then you pick your plan. (Your trial’s already going; this just sets up payment.)'; }
+      if (_intent === 'subscribe') { t.textContent = 'Sign in to subscribe'; s.textContent = 'Enter your email and we’ll send a code to log in. Then you pick your plan. (Your trial’s already going; this just sets up payment.)'; }
       else { t.textContent = 'Start your free trial'; s.textContent = '5 days free, no card needed. Enter your email and we’ll send you a sign-in code.'; }
     }
     function openSignup() { _intent = 'trial'; document.getElementById('signup-overlay').style.display = 'flex'; suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
@@ -612,7 +671,7 @@
     async function suToCard() {
       if (!_user) { suShow('email'); return; }
       suShow('card');
-      document.getElementById('su-plan-line').textContent = _plan === 'annual' ? 'Annual — $129.99/yr · billed today' : 'Monthly — $19.99/mo · billed today';
+      suPlanLine();
       var loader = document.getElementById('su-card-loader'), btn = document.getElementById('su-pay-btn');
       loader.style.display = ''; document.getElementById('su-payment-element').innerHTML = ''; btn.disabled = true;
       try {
