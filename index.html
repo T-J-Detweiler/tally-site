@@ -17,13 +17,18 @@
 
   <!-- FirstPromoter (Club Tally affiliate tracking): tags a visitor arriving via ?fpr=CODE with
        the _fprom_tid cookie (60d). Checkout forwards it to the worker → Stripe metadata, and
-       fpReferral() reports signups by email, so commissions credit the referring member. -->
+       fpReferral() reports signups by email, so commissions credit the referring member.
+       AD-BLOCKER-PROOF setup (confirmed ERR_BLOCKED_BY_CLIENT on the CDN script): the script is
+       SELF-HOSTED as /t.js (FP's fpr-prox.js build) and its beacons relay through our worker
+       (/tr → t.firstpromoter.com), so filter lists never see a FirstPromoter hostname. -->
   <script>
     (function (w) { w.fpr = w.fpr || function () { w.fpr.q = w.fpr.q || []; w.fpr.q[arguments[0] == 'set' ? 'unshift' : 'push'](arguments); }; })(window);
+    window.proxy_fpr_tr_url = 'https://tally-gemini.micahtarter.workers.dev/tr';
+    window.proxy_fpr_get_details_url = 'https://tally-gemini.micahtarter.workers.dev/tr/get_details';
     fpr("init", { cid: "99u4qzzg" });
     fpr("click");
   </script>
-  <script src="https://cdn.firstpromoter.com/fpr.js" async></script>
+  <script src="/t.js" async></script>
 
   <style>
     :root {
@@ -538,6 +543,15 @@
       try {
         document.getElementById('su-email-title').textContent = 'Claim your free trial';
         document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed. Create your account and your discount stays attached for checkout.';
+        // The greeting must live ON the sheet — the page banner sits behind the blurred overlay.
+        var card = document.getElementById('su-step-email').parentNode;
+        if (card && !document.getElementById('su-ref-chip')) {
+          var chip = document.createElement('div');
+          chip.id = 'su-ref-chip';
+          chip.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;border-radius:10px;padding:9px 14px;font-size:0.88rem;font-weight:700;text-align:center;margin-bottom:14px;';
+          chip.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
+          card.insertBefore(chip, card.firstChild);
+        }
       } catch (_) {}
     })();
     function openWebApp() { window.location.href = APP_URL; }
