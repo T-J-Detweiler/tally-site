@@ -428,14 +428,14 @@
         <div style="display:flex;gap:10px;margin-bottom:18px;">
           <div id="su-plan-monthly" onclick="suPickPlan('monthly')" style="flex:1;border:2px solid #e3e3e3;background:#fff;border-radius:14px;padding:18px 10px 14px;text-align:center;cursor:pointer;">
             <div style="font-size:0.66rem;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.05em;">Monthly</div>
-            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$19.99<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
-            <div style="font-size:0.72rem;color:#999;">billed monthly</div>
+            <div id="su-card-monthly-price" style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$19.99<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
+            <div id="su-card-monthly-note" style="font-size:0.72rem;color:#999;">billed monthly</div>
           </div>
           <div id="su-plan-annual" onclick="suPickPlan('annual')" style="flex:1;border:2px solid #7B00FF;background:#fdf4ff;border-radius:14px;padding:18px 10px 14px;text-align:center;cursor:pointer;position:relative;">
             <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7B00FF,#FF006E);color:#fff;font-size:0.6rem;font-weight:800;padding:2px 9px;border-radius:999px;white-space:nowrap;letter-spacing:0.03em;">SAVE 46%</div>
             <div style="font-size:0.66rem;font-weight:700;color:#7B00FF;text-transform:uppercase;letter-spacing:0.05em;">Annual</div>
-            <div style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$10.83<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
-            <div style="font-size:0.72rem;color:#999;">billed $129.99/yr</div>
+            <div id="su-card-annual-price" style="font-size:1.5rem;font-weight:800;color:#222;margin:5px 0 1px;">$10.83<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span></div>
+            <div id="su-card-annual-note" style="font-size:0.72rem;color:#999;">billed $129.99/yr</div>
           </div>
         </div>
         <div id="su-plan-promo-hint" style="font-size:0.82rem;color:#888;text-align:center;margin:-4px 0 14px;">Have a promo code? You&rsquo;ll enter it at checkout, right before you pay.</div>
@@ -503,19 +503,47 @@
     async function refInfo(ref) {
       try { var r = await fetch(WORKER + '/promoter-info?ref=' + encodeURIComponent(ref)); return (await r.json()) || {}; } catch (_) { return {}; }
     }
+    // One place resolves "is this an attributed visitor and what do they get": cookie or
+    // account pin → creator name + their real tracking code. Memoized; shows the greeting
+    // chip on whichever step is up. ATTRIBUTION drives everything — the user never has to
+    // know a code exists.
+    function showRefChip() {
+      try {
+        var host = document.getElementById('su-step-email');
+        var card = host && host.parentNode;
+        if (!card || document.getElementById('su-ref-chip')) return;
+        var chip = document.createElement('div');
+        chip.id = 'su-ref-chip';
+        chip.style.cssText = 'background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#7B00FF,#FF006E) border-box;border:1.5px solid transparent;border-radius:12px;padding:10px 14px;font-size:0.9rem;font-weight:700;text-align:center;margin-bottom:14px;';
+        var span = document.createElement('span');
+        span.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;';
+        span.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
+        chip.appendChild(span);
+        card.insertBefore(chip, card.firstChild);
+      } catch (_) {}
+    }
+    async function ensureRefData() {
+      if (window._refDataP) return window._refDataP;
+      window._refDataP = (async function () {
+        try {
+          var ref = await accountRef();
+          if (ref && !window._refCoupon) {
+            var i = await refInfo(ref);
+            if (i.name && !window._refName) window._refName = i.name;
+            if (i.coupon) window._refCoupon = i.coupon;
+          }
+          if (window._refName || window._refCoupon) showRefChip();
+        } catch (_) {}
+        return true;
+      })();
+      return window._refDataP;
+    }
     async function prefillPromo() {
       try {
+        await ensureRefData();
         var box = document.getElementById('su-promo');
         if (!box) return;
-        if (!box.value) {
-          if (!window._refCoupon) {
-            var ref = await accountRef();
-            if (ref) { var i = await refInfo(ref); if (i.name && !window._refName) window._refName = i.name; if (i.coupon) window._refCoupon = i.coupon; }
-          }
-          if (window._refCoupon) box.value = window._refCoupon;
-        }
-        var hint = document.getElementById('su-plan-promo-hint');
-        if (hint && box.value) hint.textContent = 'Your code ' + box.value.toUpperCase() + ' is attached. You’ll see the discount before you pay.';
+        if (!box.value && window._refCoupon) box.value = window._refCoupon;
         suCheckPromo();
       } catch (_) {}
     }
@@ -549,6 +577,31 @@
         el.textContent = label + ': $' + (base / 100).toFixed(2) + per + ' · ' + when;
       }
     }
+    // The plan CARDS themselves show the attributed visitor their real prices — an invited
+    // customer must never stare at full sticker wondering where their discount went.
+    function suRenderPlanCards() {
+      var p = window._promoInfo;
+      var ap = document.getElementById('su-card-annual-price'), an = document.getElementById('su-card-annual-note');
+      var mp = document.getElementById('su-card-monthly-price'), mn = document.getElementById('su-card-monthly-note');
+      var hint = document.getElementById('su-plan-promo-hint');
+      if (!ap || !an || !mp || !mn) return;
+      function d(base) { return p && p.valid ? (p.percentOff ? base * (100 - p.percentOff) / 100 : Math.max(0, base - (p.amountOff || 0))) : base; }
+      function usd(c) { return '$' + (Math.round(c) / 100).toFixed(2); }
+      if (p && p.valid) {
+        var a = d(12999), m = d(1999);
+        ap.innerHTML = usd(a / 12) + '<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span>';
+        an.innerHTML = 'billed <s style="color:#bbb;">$129.99</s> <b style="color:#222;">' + usd(a) + '</b>/yr';
+        mp.innerHTML = usd(m) + '<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span>';
+        mn.innerHTML = '<s style="color:#bbb;">$19.99</s> billed monthly';
+        if (hint) hint.innerHTML = '<span style="color:#7B00FF;font-weight:700;">' + (window._refName ? window._refName + '’s ' : 'Your ') + (p.percentOff ? p.percentOff + '% discount' : 'discount') + ' is already applied to these prices.</span>';
+      } else {
+        ap.innerHTML = '$10.83<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span>';
+        an.textContent = 'billed $129.99/yr';
+        mp.innerHTML = '$19.99<span style="font-size:0.7rem;font-weight:600;color:#999;">/mo</span>';
+        mn.textContent = 'billed monthly';
+        if (hint) hint.textContent = 'Have a promo code? You’ll enter it at checkout, right before you pay.';
+      }
+    }
     var _promoT = null, _promoSeq = 0;
     function suPromoChanged() { clearTimeout(_promoT); _promoT = setTimeout(suCheckPromo, 500); }
     async function suCheckPromo() {
@@ -559,7 +612,7 @@
       var code = (box.value || '').trim();
       var seq = ++_promoSeq;
       window._promoInfo = null;
-      if (!code) { note.textContent = ''; suPlanLine(); return; }
+      if (!code) { note.textContent = ''; suPlanLine(); suRenderPlanCards(); return; }
       note.style.color = '#999'; note.textContent = 'Checking your code…';
       try {
         var r = await fetch(WORKER + '/promo-check?code=' + encodeURIComponent(code));
@@ -577,6 +630,7 @@
         }
       } catch (_) { if (seq === _promoSeq) note.textContent = ''; }
       suPlanLine();
+      suRenderPlanCards();
     }
     (function () { var box = document.getElementById('su-promo'); if (box) box.addEventListener('input', suPromoChanged); })();
     // Store links — set the moment each approval lands; while empty, the web app is the path.
@@ -604,25 +658,12 @@
     (async function refWelcome() {
       var ref = fpRef();
       if (!ref) return;
-      window._refName = ''; window._refCoupon = '';
-      var i = await refInfo(ref);
-      window._refName = i.name || '';
-      window._refCoupon = i.coupon || '';
+      await ensureRefData();
       openSignup();
       try {
         document.getElementById('su-email-title').textContent = 'Claim your free trial';
         document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed. Create your account and your discount stays attached for checkout.';
-        var card = document.getElementById('su-step-email').parentNode;
-        if (card && !document.getElementById('su-ref-chip')) {
-          var chip = document.createElement('div');
-          chip.id = 'su-ref-chip';
-          chip.style.cssText = 'background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#7B00FF,#FF006E) border-box;border:1.5px solid transparent;border-radius:12px;padding:10px 14px;font-size:0.9rem;font-weight:700;text-align:center;margin-bottom:14px;';
-          var span = document.createElement('span');
-          span.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;';
-          span.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
-          chip.appendChild(span);
-          card.insertBefore(chip, card.firstChild);
-        }
+        showRefChip();
       } catch (_) {}
     })();
     function openWebApp() { window.location.href = APP_URL; }
