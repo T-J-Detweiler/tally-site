@@ -15,6 +15,16 @@
   <meta property="og:url" content="https://tallyapplications.com">
   <meta property="og:image" content="https://tallyapplications.com/icon-192.png">
 
+  <!-- FirstPromoter (Club Tally affiliate tracking): tags a visitor arriving via ?fpr=CODE with
+       the _fprom_tid cookie (60d). Checkout forwards it to the worker → Stripe metadata, and
+       fpReferral() reports signups by email, so commissions credit the referring member. -->
+  <script>
+    (function (w) { w.fpr = w.fpr || function () { w.fpr.q = w.fpr.q || []; w.fpr.q[arguments[0] == 'set' ? 'unshift' : 'push'](arguments); }; })(window);
+    fpr("init", { cid: "99u4qzzg" });
+    fpr("click");
+  </script>
+  <script src="https://cdn.firstpromoter.com/fpr.js" async></script>
+
   <style>
     :root {
       --grad: linear-gradient(135deg, #7B00FF, #FF006E);
@@ -461,6 +471,9 @@
     var APP_URL = 'https://app.tallyapplications.com';
     var _sb = null, _suEmail = '', _intent = 'trial', _user = null, _plan = 'annual', _stripe = null, _elements = null;
     function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
+    // Tell FirstPromoter who just signed in/up (email match — the backup attribution thread to
+    // the checkout's fpTid metadata). Safe no-op if FP hasn't loaded or the visitor wasn't referred.
+    function fpReferral() { try { if (window.fpr && _user && _user.email) fpr("referral", { email: _user.email, uid: _user.id }); } catch (_) {} }
     function openWebApp() { window.location.href = APP_URL; }
     function suHideSteps() { ['email','code','done','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
     function suShow(step) { suHideSteps(); var e = document.getElementById('su-step-' + step); if (e) e.style.display = 'block'; }
@@ -475,7 +488,7 @@
     function openSignup() { _intent = 'trial'; document.getElementById('signup-overlay').style.display = 'flex'; suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
     async function openSubscribe() {
       _intent = 'subscribe'; document.getElementById('signup-overlay').style.display = 'flex'; suHideSteps();
-      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) { var u = await sb().auth.getUser(); _user = u.data && u.data.user; if (_user) { suShowPlan(); return; } } } catch (_) {}
+      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) { var u = await sb().auth.getUser(); _user = u.data && u.data.user; if (_user) { fpReferral(); suShowPlan(); return; } } } catch (_) {}
       suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60);
     }
 
@@ -502,6 +515,7 @@
         var r = await sb().auth.verifyOtp({ email: _suEmail, token: token, type: 'email' });
         if (r.error) throw r.error;
         try { var u = await sb().auth.getUser(); _user = u.data && u.data.user; } catch (_) {}
+        fpReferral();
         if (_intent === 'subscribe') suShowPlan(); else suShow('done');
       } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btn.textContent = 'Verify & start'; }
     }
