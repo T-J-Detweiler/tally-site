@@ -519,22 +519,34 @@
         suCheckPromo();
       } catch (_) {}
     }
-    // The "billed today" line, discount-aware: strikethrough full price, real amount due,
-    // and what the code does. This is where the user KNOWS they're getting the deal.
+    // The "billed today" line, discount-aware AND trial-aware: strikethrough full price, real
+    // amount due, what the code does, and WHEN the charge happens (a mid-trial subscriber's
+    // card is charged when the free trial ends, not today — say so, never surprise).
+    function suDueText() {
+      try {
+        var c = _user && _user.created_at ? new Date(_user.created_at) : null;
+        if (c) {
+          var end = new Date(c.getTime() + 5 * 86400000);
+          if (end > new Date()) return 'charged ' + end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' when your free trial ends';
+        }
+      } catch (_) {}
+      return 'billed today';
+    }
     function suPlanLine() {
       var el = document.getElementById('su-plan-line');
       if (!el) return;
       var base = _plan === 'annual' ? 12999 : 1999;
       var label = _plan === 'annual' ? 'Annual' : 'Monthly';
       var per = _plan === 'annual' ? '/yr' : '/mo';
+      var when = suDueText();
       var p = window._promoInfo;
       if (p && p.valid) {
         var due = p.percentOff ? base * (100 - p.percentOff) / 100 : Math.max(0, base - (p.amountOff || 0));
         var what = p.percentOff ? p.percentOff + '% off' : '$' + ((p.amountOff || 0) / 100).toFixed(2) + ' off';
         var dur = p.duration === 'forever' ? 'every bill' : p.duration === 'repeating' ? 'your first ' + p.durationMonths + ' months' : 'your first bill';
-        el.innerHTML = label + ': <s style="color:#bbb;">$' + (base / 100).toFixed(2) + '</s> <b style="color:#222;">$' + (Math.round(due) / 100).toFixed(2) + per + '</b> billed today <span style="color:#7B00FF;font-weight:700;">(' + what + ' ' + dur + ')</span>';
+        el.innerHTML = label + ': <s style="color:#bbb;">$' + (base / 100).toFixed(2) + '</s> <b style="color:#222;">$' + (Math.round(due) / 100).toFixed(2) + per + '</b> ' + when + ' <span style="color:#7B00FF;font-weight:700;">(' + what + ' ' + dur + ')</span>';
       } else {
-        el.textContent = label + ': $' + (base / 100).toFixed(2) + per + ' billed today';
+        el.textContent = label + ': $' + (base / 100).toFixed(2) + per + ' · ' + when;
       }
     }
     var _promoT = null, _promoSeq = 0;
@@ -691,8 +703,15 @@
     async function suSubmitCard() {
       var err = document.getElementById('su-err'), btn = document.getElementById('su-pay-btn');
       if (!_stripe || !_elements) return;
+      // A code that failed validation must never ride into checkout — fix it or clear it.
+      var codeInBox = (document.getElementById('su-promo').value || '').trim();
+      if (codeInBox && !(window._promoInfo && window._promoInfo.valid)) {
+        err.textContent = 'That promo code doesn’t look right. Fix it or clear the box, then subscribe.';
+        suCheckPromo();
+        return;
+      }
       btn.disabled = true; btn.textContent = 'Subscribing…'; err.textContent = '';
-      var promo = (document.getElementById('su-promo').value || '').trim() || undefined;
+      var promo = codeInBox || undefined;
       try { localStorage.setItem('_funnelPlan', _plan); localStorage.setItem('_funnelPromo', promo || ''); } catch (_) {}
       try {
         var cs = await _stripe.confirmSetup({ elements: _elements, confirmParams: { return_url: 'https://tallyapplications.com/?subscribe_return=1' }, redirect: 'if_required' });
