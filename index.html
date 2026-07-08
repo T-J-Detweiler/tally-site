@@ -22,6 +22,20 @@
        SELF-HOSTED as /t.js (FP's fpr-prox.js build) and its beacons relay through our worker
        (/tr → t.firstpromoter.com), so filter lists never see a FirstPromoter hostname. -->
   <script>
+    // Snapshot the referral param BEFORE anything can touch the URL. t.js strips these
+    // params (history.replaceState) once its /tr beacon returns, so any later reader races
+    // it. This one value is what tells us a visitor arrived THROUGH a creator's link on
+    // THIS pageview — as opposed to merely carrying a 60-day _fprom_ref cookie from an
+    // earlier visit. Only a fresh arrival may auto-open the signup sheet.
+    window._freshRef = (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        var keys = ['fp_ref', 'fpr', 'via', 'ref', 'a', '_from', '_by', 'deal', '_go', '_get'];  // t.js's own list
+        for (var i = 0; i < keys.length; i++) { var v = q.get(keys[i]); if (v) return v; }
+      } catch (_) {}
+      return '';
+    })();
+
     (function (w) { w.fpr = w.fpr || function () { w.fpr.q = w.fpr.q || []; w.fpr.q[arguments[0] == 'set' ? 'unshift' : 'push'](arguments); }; })(window);
     window.proxy_fpr_tr_url = 'https://tally-gemini.micahtarter.workers.dev/tr';
     window.proxy_fpr_get_details_url = 'https://tally-gemini.micahtarter.workers.dev/tr/get_details';
@@ -30,98 +44,23 @@
   </script>
   <script src="/t.js" async></script>
 
+  <link rel="stylesheet" href="/tally.css">
   <style>
-    :root {
-      --grad: linear-gradient(135deg, #7B00FF, #FF006E);
-      --purple: #7B00FF;
-      --pink: #FF006E;
-      --bg: #f5f5f5;
-      --surface: #ffffff;
-      --t1: #222222;
-      --t2: #666666;
-      --t3: #999999;
-      --border: #e8e8e8;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--t1);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
-
-    /* ── Nav ── */
-    header {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(245,245,245,0.82);
-      backdrop-filter: saturate(180%) blur(14px);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
-    .brand-logo { width: 34px; height: 34px; border-radius: 9px; display: block; }
-    .brand-logo.sm { width: 28px; height: 28px; border-radius: 7px; }
-    .brand span {
-      font-size: 1.32rem; font-weight: 800; letter-spacing: -0.02em;
-      background: var(--grad); -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .nav-cta {
-      padding: 9px 20px; font-size: 0.92rem; font-weight: 700; color: #fff;
-      background: var(--grad); border: none; border-radius: 11px;
-      text-decoration: none; cursor: pointer;
-      box-shadow: 0 4px 14px rgba(123,0,255,0.30);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(123,0,255,0.38); }
-    /* "Coming soon" — looks branded but isn't clickable yet */
-    .soon { cursor: default !important; }
-    .soon:hover { transform: none !important; box-shadow: 0 4px 14px rgba(123,0,255,0.30) !important; }
-    .nav-soon {
-      padding: 8px 18px; font-size: 0.88rem; font-weight: 700; color: var(--purple);
-      background: #fdf4ff; border: 1px solid #f0d9ff; border-radius: 999px;
-    }
+    /* Page-specific only — tokens, buttons, nav, sections, banner and
+       footer all live in the shared /tally.css design system. */
 
     /* ── Hero ── */
     .hero { padding: 88px 0 72px; text-align: center; }
-    .pill {
-      display: inline-block; padding: 6px 15px; margin-bottom: 26px;
-      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
-      color: var(--purple); background: #fdf4ff;
-      border: 1px solid #f0d9ff; border-radius: 999px;
-    }
+    .hero .pill { margin-bottom: 26px; }
     .hero h1 {
       font-size: clamp(2.3rem, 6vw, 3.9rem); font-weight: 800;
       letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 22px;
-    }
-    .hero h1 .grad {
-      background: var(--grad); -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
     .hero p.lead {
       font-size: clamp(1.05rem, 2.2vw, 1.3rem); color: var(--t2);
       max-width: 640px; margin: 0 auto 36px;
     }
     .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-    .btn-primary {
-      padding: 15px 34px; font-size: 1.02rem; font-weight: 700; color: #fff;
-      background: var(--grad); border: none; border-radius: 13px;
-      text-decoration: none; cursor: pointer;
-      box-shadow: 0 8px 24px rgba(123,0,255,0.32);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(123,0,255,0.42); }
-    .btn-ghost {
-      padding: 15px 30px; font-size: 1.02rem; font-weight: 700;
-      color: var(--purple); background: var(--surface);
-      border: 1.5px solid #ead7ff; border-radius: 13px;
-      text-decoration: none; cursor: pointer; transition: background 0.15s ease;
-    }
-    .btn-ghost:hover { background: #fdf4ff; }
 
     /* ── Phone mock ── */
     .device-row { display: flex; justify-content: center; margin-top: 64px; }
@@ -135,16 +74,16 @@
     .ps-datehead { display: flex; align-items: center; justify-content: space-between; }
     .ps-nav { color: var(--purple); font-size: 1.3rem; line-height: 1; }
     .ps-day { font-size: 0.62rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.06em; }
-    .ps-date { font-size: 1.18rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .ps-date { font-size: 1.18rem; font-weight: 800; background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     /* calories-left card */
     .ps-toprow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
     .ps-lbl { font-size: 0.6rem; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.05em; }
     .ps-week { font-size: 0.6rem; font-weight: 600; color: var(--purple); }
-    .ps-big { font-size: 2.3rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+    .ps-big { font-size: 2.3rem; font-weight: 800; background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
     .ps-sub { font-size: 0.66rem; color: var(--t3); margin: 3px 0 9px; }
     .ps-bar { height: 8px; background: #ebebeb; border-radius: 4px; overflow: hidden; }
     .ps-bar.thin { height: 5px; }
-    .ps-fill { height: 100%; background: var(--grad); border-radius: 4px; }
+    .ps-fill { height: 100%; background: var(--g); border-radius: 4px; }
     .ps-macro { margin-top: 12px; }
     .ps-macro-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
     .ps-macro-top .nm { font-size: 0.64rem; font-weight: 700; color: var(--t3); text-transform: capitalize; }
@@ -159,21 +98,13 @@
     .ps-meal-macros .c { color: var(--purple); font-weight: 800; }
     .ps-chev { color: var(--t3); font-size: 0.8rem; flex-shrink: 0; }
 
-    /* ── Sections ── */
-    section.block { padding: 80px 0; }
-    .section-head { text-align: center; max-width: 620px; margin: 0 auto 54px; }
-    .section-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
-    .section-head p { font-size: 1.08rem; color: var(--t2); }
-
+    /* ── Features ── */
     .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-    .feature {
-      background: var(--surface); border-radius: 18px; padding: 30px 26px;
-      border: 1px solid var(--border); transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
+    .feature { transition: transform 0.18s ease, box-shadow 0.18s ease; }
     .feature:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
     .feature .ico {
       width: 50px; height: 50px; border-radius: 14px; margin-bottom: 18px;
-      background: #fdf4ff; display: flex; align-items: center; justify-content: center;
+      background: var(--accent-bg); display: flex; align-items: center; justify-content: center;
     }
     .feature .ico svg { width: 26px; height: 26px; stroke: url(#fgrad); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .feature h3 { font-size: 1.18rem; font-weight: 700; margin-bottom: 8px; }
@@ -181,42 +112,21 @@
 
     /* ── How it works ── */
     .how { background: var(--surface); }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; counter-reset: step; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
     .step { text-align: center; }
+    /* The one place a solid gradient is right: a numbered badge, not a control. */
     .step .num {
       width: 52px; height: 52px; margin: 0 auto 18px; border-radius: 50%;
-      background: var(--grad); color: #fff; font-size: 1.3rem; font-weight: 800;
+      background: var(--g); color: #fff; font-size: 1.3rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 18px rgba(123,0,255,0.30);
+      box-shadow: 0 6px 18px var(--glow);
     }
     .step h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 8px; }
     .step p { font-size: 0.96rem; color: var(--t2); }
 
-    /* ── CTA banner ── */
-    .cta-banner {
-      margin: 80px auto; max-width: 920px; border-radius: 28px;
-      background: var(--grad); padding: 60px 32px; text-align: center; color: #fff;
-      box-shadow: 0 24px 60px rgba(123,0,255,0.32);
-    }
-    .cta-banner h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
-    .cta-banner p { font-size: 1.1rem; opacity: 0.92; max-width: 520px; margin: 0 auto 30px; }
-    .cta-banner a {
-      display: inline-block; padding: 15px 38px; font-size: 1.05rem; font-weight: 700;
-      color: var(--purple); background: #fff; border-radius: 13px; text-decoration: none;
-      transition: transform 0.15s ease;
-    }
-    .cta-banner a:hover { transform: translateY(-2px); }
-
-    /* ── Footer ── */
-    footer { padding: 44px 0; border-top: 1px solid var(--border); }
-    .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .foot .brand span { font-size: 1.1rem; }
-    .foot .copy { font-size: 0.85rem; color: var(--t3); }
-
     @media (max-width: 760px) {
       .features, .steps { grid-template-columns: 1fr; }
       .hero { padding: 60px 0 48px; }
-      section.block { padding: 56px 0; }
     }
   </style>
 </head>
@@ -237,7 +147,7 @@
         <svg class="brand-logo" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
         <span>Tally</span>
       </a>
-      <button class="nav-cta" onclick="openSignup()">Start free trial</button>
+      <button class="btn sm" onclick="openSignup()"><span>Start free trial</span></button>
     </div>
   </header>
 
@@ -252,7 +162,7 @@
         No tedious searching. No fake precision. No guilt.
       </p>
       <div class="hero-actions">
-        <button class="btn-primary" onclick="openSignup()">Start your free trial</button>
+        <button class="btn lg" onclick="openSignup()"><span>Start your free trial</span></button>
         <a class="btn-ghost" href="#how">See how it works</a>
       </div>
 
@@ -317,32 +227,32 @@
         <p>Most trackers make you work. Tally does the work for you — and gets out of the way.</p>
       </div>
       <div class="features">
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h1l1-2h6l1 2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.2"/></svg></div>
           <h3>Snap a photo</h3>
           <p>Point your camera at a plate, a label, or a packaged item. Tally reads it and logs it — one capture, done.</p>
         </div>
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div>
           <h3>Just describe it</h3>
           <p>Type or say "a turkey sandwich and a handful of chips." Tally breaks it into editable items with honest estimates.</p>
         </div>
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
           <h3>Real restaurant numbers</h3>
           <p>Eating out? Tally pulls the official nutrition straight from the restaurant or brand — not a stale guess.</p>
         </div>
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 20V10M6 20v-4M18 20V6"/></svg></div>
           <h3>Know your day at a glance</h3>
           <p>See what's <em>left</em> to hit your goal — calories and protein — so you can steer dinner, not just record it.</p>
         </div>
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
           <h3>Honest, never obsessive</h3>
           <p>A good estimate you'll actually keep beats perfect numbers you'll quit. Edit anything in seconds if you care to.</p>
         </div>
-        <div class="feature">
+        <div class="card feature">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M12 7v5l3 2"/></svg></div>
           <h3>Never re-enter a meal</h3>
           <p>Save the things you eat all the time and re-log them with a single tap tomorrow.</p>
@@ -381,7 +291,7 @@
     <div class="cta-banner wrap">
       <h2>Eat well. Track honestly.</h2>
       <p>Tally makes staying on top of your goals feel effortless — the way it should be.</p>
-      <button onclick="openSignup()" style="display:inline-block;padding:15px 38px;font-size:1.05rem;font-weight:700;color:var(--purple);background:#fff;border:none;border-radius:13px;font-family:inherit;cursor:pointer;">Start your free trial</button>
+      <button class="btn-inv" onclick="openSignup()">Start your free trial</button>
     </div>
   </main>
 
@@ -391,7 +301,13 @@
         <svg class="brand-logo sm" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
         <span>Tally</span>
       </a>
-      <div class="copy">© 2026 Tally Applications · <a href="mailto:micahtarter@gmail.com" style="color:var(--t2);text-decoration:none">Contact</a></div>
+      <div class="copy">
+        © 2026 Tally Applications ·
+        <a href="/club">Club Tally</a> ·
+        <a href="/terms.html">Terms</a> ·
+        <a href="/privacy.html">Privacy</a> ·
+        <a href="mailto:micahtarter@gmail.com">Contact</a>
+      </div>
     </div>
   </footer>
 
@@ -404,21 +320,21 @@
         <div id="su-email-title" style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Start your free trial</div>
         <div id="su-email-sub" style="color:#666;font-size:0.95rem;margin-bottom:20px;">5 days free, no card needed. Enter your email and we&rsquo;ll send you a sign-in code.</div>
         <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1rem;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suSendCode()">
-        <button id="su-send-btn" onclick="suSendCode()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Email me a code</button>
+        <button id="su-send-btn" class="btn block" onclick="suSendCode()"><span>Email me a code</span></button>
       </div>
 
       <div id="su-step-code" style="display:none;">
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Check your email</div>
         <div style="color:#666;font-size:0.95rem;margin-bottom:20px;">We sent a verification code to <b id="su-email-echo"></b>.</div>
         <input id="su-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Verification code" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1.1rem;letter-spacing:0.12em;text-align:center;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suVerify()">
-        <button id="su-verify-btn" onclick="suVerify()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Verify &amp; start</button>
+        <button id="su-verify-btn" class="btn block" onclick="suVerify()"><span>Verify &amp; start</span></button>
       </div>
 
       <div id="su-step-done" style="display:none;text-align:center;">
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
         <div id="su-done-sub" style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your 5-day free trial has started. No card needed. Sign in to Tally with this same email.</div>
-        <button id="su-done-primary" onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;margin-bottom:12px;">Open Tally</button>
+        <button id="su-done-primary" class="btn block" style="margin-bottom:12px;" onclick="openWebApp()"><span>Open Tally</span></button>
         <div id="su-done-note" style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
       </div>
 
@@ -439,7 +355,7 @@
           </div>
         </div>
         <div id="su-plan-promo-hint" style="font-size:0.82rem;color:#888;text-align:center;margin:-4px 0 14px;">Have a promo code? You&rsquo;ll enter it at checkout, right before you pay.</div>
-        <button onclick="suToCard()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Continue</button>
+        <button class="btn block" onclick="suToCard()"><span>Continue</span></button>
       </div>
 
       <div id="su-step-card" style="display:none;">
@@ -448,7 +364,7 @@
         <div id="su-payment-element" style="margin-bottom:12px;"></div>
         <div id="su-card-loader" style="text-align:center;color:#999;font-size:0.9rem;padding:18px;">Loading secure checkout&hellip;</div>
         <input id="su-promo" type="text" autocapitalize="characters" placeholder="Promo code (optional)" style="width:100%;padding:11px 13px;border:1.5px solid #e3e3e3;border-radius:10px;font-size:0.9rem;font-family:inherit;margin-bottom:12px;">
-        <button id="su-pay-btn" onclick="suSubmitCard()" disabled style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Subscribe</button>
+        <button id="su-pay-btn" class="btn block" onclick="suSubmitCard()" disabled><span>Subscribe</span></button>
         <div style="text-align:center;color:#aaa;font-size:0.78rem;margin-top:10px;">Secured by Stripe &middot; cancel anytime</div>
       </div>
 
@@ -456,7 +372,7 @@
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re subscribed</div>
         <div style="color:#666;font-size:0.95rem;margin-bottom:22px;">Thanks for going Tally. Open the app and keep going.</div>
-        <button onclick="openWebApp()" style="width:100%;padding:15px;border:none;border-radius:12px;font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#7B00FF,#FF006E);cursor:pointer;font-family:inherit;">Open Tally on the web</button>
+        <button class="btn block" onclick="openWebApp()"><span>Open Tally on the web</span></button>
       </div>
 
       <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
@@ -476,12 +392,19 @@
     var APP_URL = 'https://app.tallyapplications.com';
     var _sb = null, _suEmail = '', _intent = 'trial', _user = null, _plan = 'annual', _stripe = null, _elements = null;
     function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
+    // House buttons paint their label through a child <span> that carries the gradient text
+    // clip. Writing btn.textContent would DELETE that span and the label goes invisible.
+    // Every label swap goes through here.
+    function btnLabel(btn, text) { if (!btn) return; var s = btn.querySelector('span'); if (s) s.textContent = text; else btn.textContent = text; }
     // Club Tally referral plumbing. The FP script leaves two cookies: _fprom_ref (the creator's
     // code) and _fprom_tid (the click id). Cookies die with the browser, so at sign-in we PIN the
     // referral to the account via the worker (/referral-attach) — from then on the discount and
     // the commission follow the ACCOUNT, any device, any browser.
     function fpCookie(name) { try { var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)')); return m ? decodeURIComponent(m[1]) : ''; } catch (_) { return ''; } }
-    function fpRef() { return fpCookie('_fprom_ref') || (new URLSearchParams(location.search).get('fpr') || ''); }
+    // Cookie first (survives the URL cleanup t.js does), then the <head> snapshot of the
+    // arrival param. Never read location.search here: by the time this runs, t.js may have
+    // already stripped ?fpr= via history.replaceState.
+    function fpRef() { return fpCookie('_fprom_ref') || window._freshRef || ''; }
     function fpReferral() {
       try { if (window.fpr && _user && _user.email) fpr("referral", { email: _user.email, uid: _user.id }); } catch (_) {}
       try {
@@ -514,9 +437,10 @@
         if (!card || document.getElementById('su-ref-chip')) return;
         var chip = document.createElement('div');
         chip.id = 'su-ref-chip';
-        chip.style.cssText = 'background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#7B00FF,#FF006E) border-box;border:1.5px solid transparent;border-radius:12px;padding:10px 14px;font-size:0.9rem;font-weight:700;text-align:center;margin-bottom:14px;';
+        chip.className = 'house-card';       // surface + gradient ring, from /tally.css
+        chip.style.marginBottom = '14px';
         var span = document.createElement('span');
-        span.style.cssText = 'background:linear-gradient(135deg,#7B00FF,#FF006E);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;';
+        span.className = 'grad';
         span.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
         chip.appendChild(span);
         card.insertBefore(chip, card.firstChild);
@@ -651,10 +575,10 @@
         var ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
         var btn = document.getElementById('su-done-primary'), note = document.getElementById('su-done-note'), sub = document.getElementById('su-done-sub');
         if (window._refName) sub.textContent = 'Your 5-day free trial has started. No card needed, and ' + window._refName + '’s discount stays attached to your account for checkout.';
-        if (ios && STORE_IOS) { btn.textContent = 'Download Tally on the App Store'; btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
-        else if (android && STORE_ANDROID) { btn.textContent = 'Get Tally on Google Play'; btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
-        else if (!ios && !android && (STORE_IOS || STORE_ANDROID)) { btn.textContent = 'Continue on desktop'; note.textContent = 'Tally is also on your phone, on the App Store and Google Play.'; }
-        else { btn.textContent = 'Open Tally'; note.textContent = 'The Tally app hits the App Store and Google Play any day now. Until then, Tally runs right here on the web.'; }
+        if (ios && STORE_IOS) { btnLabel(btn, 'Download Tally on the App Store'); btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
+        else if (android && STORE_ANDROID) { btnLabel(btn, 'Get Tally on Google Play'); btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
+        else if (!ios && !android && (STORE_IOS || STORE_ANDROID)) { btnLabel(btn, 'Continue on desktop'); note.textContent = 'Tally is also on your phone, on the App Store and Google Play.'; }
+        else { btnLabel(btn, 'Open Tally'); note.textContent = 'The Tally app hits the App Store and Google Play any day now. Until then, Tally runs right here on the web.'; }
       } catch (_) {}
     }
     // Referred arrivals skip the brochure: the signup sheet opens immediately with the
@@ -662,10 +586,19 @@
     // The greeting is a quiet house-style card ON the sheet (surface + gradient ring +
     // gradient text, like the app's buttons) — informational, never button-shaped. No page
     // banner: it sat behind the blurred overlay where nobody could read it.
+    //
+    // AUTO-OPEN IS GATED ON A FRESH ?fpr= ARRIVAL — never on the cookie alone. This used to
+    // call fpRef(), which reads the _fprom_ref COOKIE first. That cookie lives 60 DAYS, so
+    // every referred visitor (and the owner, after testing his own link) got the trial sheet
+    // thrown at them on every single homepage visit for two months — subscribers included.
+    // The cookie still does its real job below: greeting chip + discount prefill.
     (async function refWelcome() {
-      var ref = fpRef();
-      if (!ref) return;
-      await ensureRefData();
+      var fresh = window._freshRef || '';
+      if (!fresh && !fpCookie('_fprom_ref')) return;
+      await ensureRefData();          // chip + coupon prefill for ANY known referral
+      if (!fresh) return;             // returning visitor: data yes, ambush no
+      // Someone already signed in has an account; don't sell them a trial they're on.
+      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) return; } catch (_) {}
       openSignup();
       try {
         // Only promise a discount when the affiliate actually carries one — an affiliate
@@ -697,7 +630,7 @@
       var email = (document.getElementById('su-email').value || '').trim().toLowerCase();
       var err = document.getElementById('su-err');
       if (!email || email.indexOf('@') < 1) { err.textContent = 'Please enter a valid email.'; return; }
-      var btn = document.getElementById('su-send-btn'); btn.disabled = true; btn.textContent = 'Sending…'; err.textContent = '';
+      var btn = document.getElementById('su-send-btn'); btn.disabled = true; btnLabel(btn, 'Sending…'); err.textContent = '';
       try {
         var r = await sb().auth.signInWithOtp({ email: email });
         if (r.error) throw r.error;
@@ -705,20 +638,20 @@
         document.getElementById('su-email-echo').textContent = email;
         suShow('code'); document.getElementById('su-code').focus();
       } catch (e) { err.textContent = (e && e.message) || 'Could not send the code. Try again.'; }
-      finally { btn.disabled = false; btn.textContent = 'Email me a code'; }
+      finally { btn.disabled = false; btnLabel(btn, 'Email me a code'); }
     }
     async function suVerify() {
       var token = (document.getElementById('su-code').value || '').trim();
       var err = document.getElementById('su-err');
       if (token.length < 4) { err.textContent = 'Enter the code from your email.'; return; }
-      var btn = document.getElementById('su-verify-btn'); btn.disabled = true; btn.textContent = 'Verifying…'; err.textContent = '';
+      var btn = document.getElementById('su-verify-btn'); btn.disabled = true; btnLabel(btn, 'Verifying…'); err.textContent = '';
       try {
         var r = await sb().auth.verifyOtp({ email: _suEmail, token: token, type: 'email' });
         if (r.error) throw r.error;
         try { var u = await sb().auth.getUser(); _user = u.data && u.data.user; } catch (_) {}
         fpReferral();
         if (_intent === 'subscribe') suShowPlan(); else { suShow('done'); renderDone(); }
-      } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btn.textContent = 'Verify & start'; }
+      } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btnLabel(btn, 'Verify & start'); }
     }
 
     // ── Subscribe (Stripe) ──
@@ -760,7 +693,7 @@
         suCheckPromo();
         return;
       }
-      btn.disabled = true; btn.textContent = 'Subscribing…'; err.textContent = '';
+      btn.disabled = true; btnLabel(btn, 'Subscribing…'); err.textContent = '';
       var promo = codeInBox || undefined;
       try { localStorage.setItem('_funnelPlan', _plan); localStorage.setItem('_funnelPromo', promo || ''); } catch (_) {}
       try {
@@ -769,7 +702,7 @@
         if (!cs.setupIntent || cs.setupIntent.status !== 'succeeded') throw new Error('Card setup did not complete.');
         await suCreateSub(cs.setupIntent.payment_method, _plan, promo);
         suShow('subscribed');
-      } catch (e) { err.textContent = (e && e.message) || 'Something went wrong. Try again.'; btn.disabled = false; btn.textContent = 'Subscribe'; }
+      } catch (e) { err.textContent = (e && e.message) || 'Something went wrong. Try again.'; btn.disabled = false; btnLabel(btn, 'Subscribe'); }
     }
     // FirstPromoter referral id: the FP tracking script sets a _fprom_tid cookie when someone
     // arrives through an affiliate link (?fpr=CODE). If it's there at checkout, it rides along

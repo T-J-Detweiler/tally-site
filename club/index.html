@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Tally — Share Tally, get paid for it</title>
+  <meta name="description" content="Club Tally is where creators share Tally with the people who trust them. Recurring commission for as long as your people stay, a real discount to hand out, and Tally free while you're in.">
+  <meta name="theme-color" content="#7B00FF">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id='b'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%237B00FF'/%3E%3Cstop%20offset='0.5'%20stop-color='%23FF006E'/%3E%3Cstop%20offset='1'%20stop-color='%23FFD54A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='512'%20height='512'%20rx='115'%20fill='url(%23b)'/%3E%3Crect%20x='148'%20y='148'%20width='216'%20height='50'%20rx='25'%20fill='white'/%3E%3Crect%20x='231'%20y='210'%20width='50'%20height='166'%20rx='25'%20fill='white'/%3E%3C/svg%3E">
+
+  <meta property="og:title" content="Club Tally">
+  <meta property="og:description" content="Share Tally with the people who trust you. Recurring commission, a real discount to hand out, and Tally free while you're in.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tallyapplications.com/club">
+
+  <!-- Not a customer page. Reachable from the footer and from a link we hand a creator
+       directly; deliberately absent from the top nav. -->
+  <meta name="robots" content="index, follow">
+
+  <link rel="stylesheet" href="/tally.css">
+  <style>
+    /* Page-specific only. Everything else comes from /tally.css, and <body class="club">
+       re-tints every gradient in it to purple → pink → GOLD. */
+
+    .hero { padding: 84px 0 64px; text-align: center; }
+    .hero .pill { margin-bottom: 26px; }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5.6vw, 3.7rem); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 22px;
+    }
+    .hero p.lead {
+      font-size: clamp(1.05rem, 2.2vw, 1.28rem); color: var(--t2);
+      max-width: 620px; margin: 0 auto 34px;
+    }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; align-items: center; }
+    .hero-note { font-size: 0.86rem; color: var(--t3); margin-top: 20px; }
+
+    /* ── The five tally marks: the club's own mark ── */
+    .marks { display: flex; gap: 7px; justify-content: center; margin-bottom: 30px; }
+    .marks i {
+      display: block; width: 5px; height: 34px; border-radius: 3px;
+      background: var(--g); opacity: 0.30;
+    }
+    .marks i:nth-child(5) { transform: rotate(24deg) scaleY(1.12); opacity: 1; }
+
+    /* ── What you get ── */
+    .perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .perk .ico {
+      width: 50px; height: 50px; border-radius: 14px; margin-bottom: 18px;
+      background: var(--accent-bg); display: flex; align-items: center; justify-content: center;
+    }
+    .perk .ico svg { width: 26px; height: 26px; stroke: url(#cgrad); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .perk h3 { font-size: 1.16rem; font-weight: 700; margin-bottom: 8px; }
+    .perk p { font-size: 0.96rem; color: var(--t2); }
+
+    /* ── Tiers ── */
+    .tiers-wrap { background: var(--surface); }
+    .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+    .tier {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 18px;
+      padding: 28px 24px; display: flex; flex-direction: column;
+    }
+    /* Only the top rung wears the gradient ring. Earned, not given. */
+    .tier.top {
+      background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--g) border-box;
+      border: 1.7px solid transparent;
+      box-shadow: 0 18px 44px var(--glow);
+    }
+    .tier-mark { display: flex; gap: 5px; margin-bottom: 16px; }
+    .tier-mark i { display: block; width: 4px; height: 20px; border-radius: 2px; background: var(--t3); }
+    .tier.top .tier-mark i { background: var(--g); }
+    .tier.top .tier-mark i:nth-child(5) { transform: rotate(24deg) scaleY(1.1); }
+    .tier h3 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; }
+    .tier .rate { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 10px 0 2px; }
+    .tier .rate small { font-size: 0.9rem; font-weight: 700; color: var(--t3); letter-spacing: 0; }
+    .tier .rate-sub { font-size: 0.8rem; color: var(--t3); font-weight: 600; margin-bottom: 18px; }
+    .tier ul { list-style: none; margin-top: auto; }
+    .tier li { font-size: 0.93rem; color: var(--t2); padding: 7px 0 7px 24px; position: relative; }
+    .tier li::before {
+      content: ''; position: absolute; left: 0; top: 14px;
+      width: 11px; height: 6px; border-left: 2px solid var(--purple); border-bottom: 2px solid var(--purple);
+      transform: rotate(-45deg);
+    }
+    .tier.top li::before { border-color: #E8A93C; }
+    .tier li b { color: var(--t1); font-weight: 700; }
+    .tier-note { text-align: center; color: var(--t3); font-size: 0.9rem; margin-top: 34px; }
+
+    /* ── How it works ── */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+    .step { text-align: center; }
+    .step .num {
+      width: 52px; height: 52px; margin: 0 auto 18px; border-radius: 50%;
+      background: var(--g); color: #fff; font-size: 1.3rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 18px var(--glow);
+    }
+    .step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 0.96rem; color: var(--t2); }
+
+    /* ── Who it's for ── */
+    .fit { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 860px; margin: 0 auto; }
+    .fit h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.01em; }
+    .fit ul { list-style: none; }
+    .fit li { font-size: 0.95rem; color: var(--t2); padding: 6px 0 6px 20px; position: relative; }
+    .fit li::before { content: '·'; position: absolute; left: 6px; font-weight: 800; color: var(--t3); }
+
+    /* ── Signup ── */
+    .signup { max-width: 720px; margin: 0 auto; }
+    #club-embed { width: 100%; min-height: 850px; border: 0; border-radius: 18px; background: var(--surface); }
+
+    @media (max-width: 860px) {
+      .perks, .tiers, .steps, .fit { grid-template-columns: 1fr; }
+      .hero { padding: 56px 0 44px; }
+      .tier.top { box-shadow: 0 12px 30px var(--glow); }
+    }
+  </style>
+</head>
+<body class="club">
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <linearGradient id="cgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B00FF"/><stop offset="50%" stop-color="#FF006E"/><stop offset="100%" stop-color="#FFD54A"/>
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B00FF"/><stop offset="50%" stop-color="#FF006E"/><stop offset="100%" stop-color="#FFD54A"/>
+    </linearGradient>
+  </defs></svg>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="/">
+        <svg class="brand-logo" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
+        <span>Tally</span>
+        <small>Club</small>
+      </a>
+      <a class="btn sm" href="#join"><span>Apply to join</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <div class="marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="pill">Invitation only</span>
+      <h1>Share Tally with<br>the people who <span class="grad">trust you.</span></h1>
+      <p class="lead">
+        Club Tally is a small group of creators who put Tally in front of their own audience.
+        You get paid every month your people stay, you get a real discount to hand them,
+        and you get Tally free for as long as you're in.
+      </p>
+      <div class="hero-actions">
+        <a class="btn lg" href="#join"><span>Apply to join</span></a>
+        <a class="btn-ghost" href="#tiers">See what it pays</a>
+      </div>
+      <div class="hero-note">We read every application ourselves. No follower minimum.</div>
+    </section>
+
+    <!-- What you get -->
+    <section class="block wrap">
+      <div class="section-head">
+        <h2>What being in gets you</h2>
+        <p>Three things, and none of them expire while you're a member.</p>
+      </div>
+      <div class="perks">
+        <div class="card perk">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
+          <h3>Paid every month, not once</h3>
+          <p>Your commission recurs for as long as the person you sent keeps their subscription. Not a one time bounty that pays you and forgets you.</p>
+        </div>
+        <div class="card perk">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M9 15 15 9"/><circle cx="9.5" cy="9.5" r="1.6"/><circle cx="14.5" cy="14.5" r="1.6"/><rect x="3" y="3" width="18" height="18" rx="5"/></svg></div>
+          <h3>A discount that's really yours</h3>
+          <p>Your link carries your own code, so your audience saves money the moment they arrive. You're bringing them something, not selling at them.</p>
+        </div>
+        <div class="card perk">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 14.6 8.6 21 9.4l-4.6 4.3 1.2 6.3L12 17l-5.6 3 1.2-6.3L3 9.4l6.4-.8z"/></svg></div>
+          <h3>Tally, on us</h3>
+          <p>Members use the whole app free, the entire time they're in the club. You can't recommend something honestly if you're not living in it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tiers -->
+    <section class="block tiers-wrap" id="tiers">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Three rungs. You climb them.</h2>
+          <p>Everyone starts at the same place. You move up as your people stick around, and we tell you when you have.</p>
+        </div>
+        <div class="tiers">
+          <div class="tier">
+            <div class="tier-mark"><i></i></div>
+            <h3>Member</h3>
+            <div class="rate">15%<small> recurring</small></div>
+            <div class="rate-sub">for the life of every subscription</div>
+            <ul>
+              <li>Your own link and discount code</li>
+              <li>Tally free while you're a member</li>
+              <li>A dashboard that shows exactly what you've earned</li>
+            </ul>
+          </div>
+          <div class="tier">
+            <div class="tier-mark"><i></i><i></i><i></i></div>
+            <h3>Regular</h3>
+            <div class="rate">20%<small> recurring</small></div>
+            <div class="rate-sub">applied to new and existing referrals</div>
+            <ul>
+              <li>Everything in Member</li>
+              <li><b>A higher rate on people you already sent</b>, not just the next ones</li>
+              <li>Early access to what we're building next</li>
+            </ul>
+          </div>
+          <div class="tier top">
+            <div class="tier-mark"><i></i><i></i><i></i><i></i><i></i></div>
+            <h3>Fifth Stroke</h3>
+            <div class="rate">25%<small> recurring</small></div>
+            <div class="rate-sub">plus 5% of what the creators you bring in earn</div>
+            <ul>
+              <li>Everything in Regular</li>
+              <li><b>Bring other creators into the club</b> and earn 5% of their gross, on top of your own</li>
+              <li>A hand in where Tally goes</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tier-note">
+          A tally group is five marks, and the fifth one closes it. You move up by invitation as your
+          audience grows with us, and we come to you.
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="block wrap">
+      <div class="section-head">
+        <h2>How it actually works</h2>
+        <p>No inventory, no codes to chase, no invoicing.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Apply and get your link</h3>
+          <p>Tell us who you are and where your people are. If it fits, you get a link and a discount code that carry your name.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Share it how you already talk</h3>
+          <p>A caption, a story, a description, a pinned comment. Anyone who arrives through your link gets your discount automatically.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Get paid, then keep getting paid</h3>
+          <p>Commission lands every month a referred subscriber stays. Payouts go straight to PayPal.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fit -->
+    <section class="block wrap">
+      <div class="section-head">
+        <h2>Who we're looking for</h2>
+        <p>We'd rather have thirty people who mean it than three thousand who don't.</p>
+      </div>
+      <div class="fit">
+        <div class="card">
+          <h3>This is probably you</h3>
+          <ul>
+            <li>You cook, lift, coach, or talk about food and your audience listens</li>
+            <li>You've been asked "what do you use to track?" more than once</li>
+            <li>You'd use Tally whether or not we paid you</li>
+            <li>Your audience is small and it's real</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>This is probably not</h3>
+          <ul>
+            <li>You want a one time payment for one post</li>
+            <li>You promote whatever pays most this week</li>
+            <li>You've never opened the app</li>
+            <li>You bought your following</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Apply -->
+    <section class="block wrap" id="join">
+      <div class="section-head">
+        <h2>Come in.</h2>
+        <p>Applications are read by a person, usually within a couple of days.</p>
+      </div>
+      <div class="signup" style="text-align:center;">
+        <!-- ── SIGNUP: link-out today, embed when the plan allows ──────────────
+             FirstPromoter's embeddable signup form needs the BUSINESS plan and a
+             custom domain first (help.firstpromoter.com/en/articles/8971396). Until
+             then this button opens the hosted FP signup page in a new tab.
+
+             TO SWITCH TO THE EMBED once you're on Business + club.tallyapplications.com:
+               1. delete the <a data-club-apply> button below
+               2. uncomment the iframe
+               3. point CLUB_SIGNUP_URL at the campaign signup URL
+                  (FP → Promoters → "Get login and signup links")
+        -->
+        <a class="btn lg" data-club-apply href="#join" target="_blank" rel="noopener">
+          <span>Apply to Club Tally</span>
+        </a>
+
+        <!-- <iframe id="club-embed" src="" height="850" width="100%" frameborder="0" allow="clipboard-write"></iframe> -->
+
+        <div class="hero-note" style="margin-top:22px;">
+          Already a member? <a href="#" data-club-login style="color:var(--purple);font-weight:600;">Sign in to your dashboard</a>.
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-banner wrap">
+      <h2>Five marks. One club.</h2>
+      <p>If Tally is already the thing you'd recommend, you should be getting paid for it.</p>
+      <a class="btn-inv" href="#join">Apply to join</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <a class="brand" href="/">
+        <svg class="brand-logo sm" viewBox="0 0 512 512" aria-label="Tally logo"><rect width="512" height="512" rx="115" fill="url(#logoGrad)"/><rect x="148" y="148" width="216" height="50" rx="25" fill="#fff"/><rect x="231" y="210" width="50" height="166" rx="25" fill="#fff"/></svg>
+        <span>Tally</span>
+      </a>
+      <div class="copy">
+        © 2026 Tally Applications ·
+        <a href="/">Home</a> ·
+        <a href="/terms.html">Terms</a> ·
+        <a href="/privacy.html">Privacy</a> ·
+        <a href="mailto:micahtarter@gmail.com">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────
+    // The ONE place the FirstPromoter portal URLs live.
+    // Grab both from FP → Promoters → "Get login and signup links".
+    // ─────────────────────────────────────────────────────────────
+    var CLUB_SIGNUP_URL = '';   // e.g. https://tally.firstpromoter.com/signup/club-tally/<id>
+    var CLUB_LOGIN_URL  = '';   // e.g. https://tally.firstpromoter.com/login
+
+    (function () {
+      // Until the URLs are filled in, the apply button falls back to email so the page is
+      // never a dead end. Same for the member sign-in link (it simply hides).
+      var apply = document.querySelectorAll('[data-club-apply]');
+      for (var i = 0; i < apply.length; i++) {
+        if (CLUB_SIGNUP_URL) { apply[i].href = CLUB_SIGNUP_URL; }
+        else { apply[i].href = 'mailto:micahtarter@gmail.com?subject=Club%20Tally%20application'; apply[i].removeAttribute('target'); }
+      }
+      var login = document.querySelector('[data-club-login]');
+      if (login) {
+        if (CLUB_LOGIN_URL) { login.href = CLUB_LOGIN_URL; login.target = '_blank'; login.rel = 'noopener'; }
+        else { login.parentNode.style.display = 'none'; }
+      }
+      var frame = document.getElementById('club-embed');
+      if (frame && CLUB_SIGNUP_URL) frame.src = CLUB_SIGNUP_URL;
+    })();
+  </script>
+</body>
+</html>
