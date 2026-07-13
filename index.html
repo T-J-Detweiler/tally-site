@@ -154,6 +154,22 @@
     #signup-overlay.open { display: flex; }
     #signup-sheet { margin: auto; }
     body.su-locked { overflow: hidden; }
+
+    /* ── Official store badges ───────────────────────────────────────
+       Apple's and Google's OWN artwork, served from our domain (never hotlinked). A generic
+       house button asking someone to install an app does not read as legitimate; people are
+       trained to trust these two shapes and tap them without thinking.
+
+       The two assets are not the same shape: Apple's SVG is the bare badge (119.66x40),
+       while Google's PNG ships with its required clear-space baked into the image. So a
+       matched visual height needs Google rendered taller, with the surplus pulled back out
+       by a negative margin. Do not "fix" that by cropping their artwork; the clear space is
+       mandated by Google's brand guidelines. */
+    .store-badges { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .store-badges a { display: inline-flex; align-items: center; text-decoration: none; }
+    .store-badges img { display: block; }
+    .badge-apple  { height: 46px; width: auto; }
+    .badge-google { height: 60px; width: auto; margin: -7px 0; }
   </style>
 </head>
 <body>
@@ -393,9 +409,10 @@
       <div id="su-step-subscribed" style="display:none;text-align:center;">
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
-        <div id="su-sub-headline" style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your free trial has started.</div>
-        <button id="su-sub-primary" class="btn block" style="margin-bottom:12px;" onclick="openWebApp()"><span>Open Tally</span></button>
-        <div id="su-sub-note" style="color:#999;font-size:0.85rem;"></div>
+        <div id="su-sub-headline" style="color:#666;font-size:0.95rem;margin-bottom:20px;">Your free trial has started.</div>
+        <div id="su-sub-cta" style="font-weight:700;font-size:1rem;color:#1a1a1a;margin-bottom:12px;">Download Tally and start tallying.</div>
+        <div id="su-sub-badges" class="store-badges"></div>
+        <div id="su-sub-note" style="color:#999;font-size:0.85rem;margin-top:16px;"></div>
       </div>
 
       <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
@@ -626,22 +643,43 @@
     // honor and illegal to explain. Taking the card at signup locks the customer to Stripe before
     // Apple ever sees them, so the discount lands where it was promised and no commission is paid
     // on a discounted sale. IAP therefore only ever serves an organic App Store walk-up.
+    function appleBadge() {
+      return '<a href="' + STORE_IOS + '" aria-label="Download Tally on the App Store">' +
+             '<img class="badge-apple" src="/badges/app-store.svg" alt="Download on the App Store"></a>';
+    }
+    function googleBadge() {
+      return '<a href="' + STORE_ANDROID + '" aria-label="Get Tally on Google Play">' +
+             '<img class="badge-google" src="/badges/google-play.png" alt="Get it on Google Play"></a>';
+    }
     function renderSubscribed() {
       try {
         var ua = navigator.userAgent || '';
         var ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
-        var btn = document.getElementById('su-sub-primary'),
+        var badges = document.getElementById('su-sub-badges'),
+            cta = document.getElementById('su-sub-cta'),
             note = document.getElementById('su-sub-note'),
             head = document.getElementById('su-sub-headline');
         var end = suTrialEndStr();
         head.textContent = 'Your 5-day free trial has started'
           + (window._promoInfo && window._promoInfo.valid ? ', with your discount applied' : '')
           + '. Your card is on file and nothing is charged'
-          + (end ? ' until ' + end : ' until your trial ends') + '. Now go get tallying.';
-        var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Open Tally on the web</a>.';
-        if (ios && STORE_IOS) { btnLabel(btn, 'Download Tally on the App Store'); btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = web; }
-        else if (android && STORE_ANDROID) { btnLabel(btn, 'Get Tally on Google Play'); btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = web; }
-        else { btnLabel(btn, 'Open Tally on the web'); btn.onclick = openWebApp; note.innerHTML = 'On your phone? Get Tally on the <a href="' + STORE_IOS + '" style="color:#7B00FF;">App Store</a> or <a href="' + STORE_ANDROID + '" style="color:#7B00FF;">Google Play</a>.'; }
+          + (end ? ' until ' + end : ' until your trial ends') + '.';
+        var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">Open Tally on the web</a>.';
+        if (ios) {
+          cta.textContent = 'Download Tally and start tallying.';
+          badges.innerHTML = appleBadge();
+          note.innerHTML = web;
+        } else if (android) {
+          cta.textContent = 'Download Tally and start tallying.';
+          badges.innerHTML = googleBadge();
+          note.innerHTML = web;
+        } else {
+          // Desktop. They can start on the web right now, but Tally is a phone app, so both
+          // badges are the real invitation and the web link is the runner-up.
+          cta.textContent = 'Get Tally on your phone and start tallying.';
+          badges.innerHTML = appleBadge() + googleBadge();
+          note.innerHTML = 'Or <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">open Tally on the web</a> right now.';
+        }
       } catch (_) {}
     }
     // Referred arrivals skip the brochure: the signup sheet opens immediately with the
