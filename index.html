@@ -341,6 +341,17 @@
       <p>Tally makes staying on top of your goals feel effortless — the way it should be.</p>
       <button class="btn-inv" onclick="openSignup()">Start your free trial</button>
     </div>
+
+    <!-- Store badges. DELIBERATELY BELOW the CTA and never above it: a referred visitor who
+         taps a store badge instead of signing up costs their creator the commission AND costs
+         themselves the discount, and on iPhone they land on full-price In-App Purchase. So the
+         trial is the headline, the stores are the proof it's a real app, and refStoreNote()
+         adds a line steering a referred visitor back to checkout first. -->
+    <section class="block wrap" style="text-align:center;padding-top:0;">
+      <div style="font-weight:700;font-size:1.02rem;margin-bottom:4px;">Tally lives on your phone.</div>
+      <div id="store-note" style="color:var(--t2);font-size:0.92rem;margin-bottom:16px;">Start your trial here, then download the app and sign in with the same email.</div>
+      <div class="store-badges" id="home-badges"></div>
+    </section>
   </main>
 
   <footer>
@@ -494,10 +505,20 @@
         // No price here. There are two plans, and the customer picks one on the NEXT screen:
         // quoting "$19.99/mo" before they have chosen is both premature and wrong for anyone
         // who goes annual. Prices live on the plan step, where they can be compared.
+        //
+        // And SAY WHY WE ARE ASKING. A visitor who came to download an app, and is instead
+        // handed an email box, needs the reason in the same breath: the discount is claimed
+        // HERE, on the web, and it cannot be claimed in the App Store. Answer "why did you just
+        // ask for my email" before they think to ask it.
         var lead = window._refPct
-          ? 'Create your account to get 5 days free and <b>' + esc(window._refName) + '’s ' + window._refPct + '% off</b>.'
-          : 'Create your account and get 5 days free.';
-        s.innerHTML = lead + '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
+          ? 'Set up your account to claim <b>' + esc(window._refName) + '’s ' + window._refPct + '% off</b> and start 5 days free.'
+          : 'Set up your account and start 5 days free.';
+        var why = window._refPct
+          ? 'The discount is applied here, on the web. Once you’re set up, download the app and sign in with this same email.'
+          : 'Once you’re set up, download the app and sign in with this same email.';
+        s.innerHTML = lead +
+          '<div style="font-size:0.88rem;color:#666;margin-top:10px;">' + why + '</div>' +
+          '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
         [t, s].forEach(function (el) { el.classList.remove('su-greet-in'); void el.offsetWidth; el.classList.add('su-greet-in'); });
       } catch (_) {}
     }
@@ -649,6 +670,29 @@
       return '<a href="' + STORE_ANDROID + '" aria-label="Get Tally on Google Play">' +
              '<img class="badge-google" src="/badges/google-play.png" alt="Get it on Google Play"></a>';
     }
+    // Homepage badges. Both always shown here (unlike the handover screen, which routes by
+    // device) because this is a shop window, not a handover: a visitor on a laptop still needs
+    // to see that Tally is a real, shipped app on both stores.
+    (function renderHomeBadges() {
+      var el = document.getElementById('home-badges');
+      if (el) el.innerHTML = appleBadge() + googleBadge();
+    })();
+    // A referred visitor must be told, plainly, that the discount is claimed HERE and not in
+    // the store. Otherwise they tap a badge, pay full price (via Apple's IAP on iPhone, where a
+    // discount is not even possible), and their creator earns nothing.
+    async function refStoreNote() {
+      try {
+        if (!fpRef()) return;
+        await ensureRefData();
+        var n = document.getElementById('store-note');
+        if (!n) return;
+        var who = window._refName ? esc(window._refName) + '’s' : 'your';
+        n.innerHTML = window._refPct
+          ? '<b>Claim ' + who + ' ' + window._refPct + '% off here first.</b> The discount can only be applied on this page. Then download the app and sign in with the same email.'
+          : 'Start your trial here first, then download the app and sign in with the same email.';
+      } catch (_) {}
+    }
+    refStoreNote();
     function renderSubscribed() {
       try {
         var ua = navigator.userAgent || '';
@@ -734,6 +778,7 @@
       }
       t.textContent = 'Create your account'; t.style.fontSize = '';
       s.innerHTML = 'Get 5 days free. Cancel anytime.' +
+        '<div style="font-size:0.88rem;color:#666;margin-top:10px;">Once you’re set up, download the app and sign in with this same email.</div>' +
         '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
       renderRefGreeting();   // a known referrer overrides both lines with their own welcome
     }
