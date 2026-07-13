@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Club Tally: Share Tally, get paid for it</title>
-  <meta name="description" content="Club Tally is where creators share Tally with the people who trust them. Recurring commission for as long as your people stay, a real discount to hand out, and Tally free while you're in.">
+  <meta name="description" content="Club Tally is where creators share Tally with the people who trust them. Commission for life, for as long as your people stay, a real discount to hand out, and Tally free while you're in.">
   <meta name="theme-color" content="#7B00FF">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id='b'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%237B00FF'/%3E%3Cstop%20offset='0.5'%20stop-color='%23FF006E'/%3E%3Cstop%20offset='1'%20stop-color='%23FFD54A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='512'%20height='512'%20rx='115'%20fill='url(%23b)'/%3E%3Crect%20x='148'%20y='148'%20width='216'%20height='50'%20rx='25'%20fill='white'/%3E%3Crect%20x='231'%20y='210'%20width='50'%20height='166'%20rx='25'%20fill='white'/%3E%3C/svg%3E">
 
   <meta property="og:title" content="Club Tally">
-  <meta property="og:description" content="Share Tally with the people who trust you. Recurring commission, a real discount to hand out, and Tally free while you're in.">
+  <meta property="og:description" content="Share Tally with the people who trust you. Commission for life, a real discount to hand out, and Tally free while you're in.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tallyapplications.com/club">
 
@@ -35,14 +35,6 @@
     .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; align-items: center; }
     .hero-note { font-size: 0.86rem; color: var(--t3); margin-top: 20px; }
 
-    /* ── The five tally marks: the club's own mark ── */
-    .marks { display: flex; gap: 7px; justify-content: center; margin-bottom: 30px; }
-    .marks i {
-      display: block; width: 5px; height: 34px; border-radius: 3px;
-      background: var(--g); opacity: 0.30;
-    }
-    .marks i:nth-child(5) { transform: rotate(24deg) scaleY(1.12); opacity: 1; }
-
     /* ── What you get ── */
     .perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
     .perk .ico {
@@ -66,10 +58,8 @@
       border: 1.7px solid transparent;
       box-shadow: 0 18px 44px var(--glow);
     }
-    .tier-mark { display: flex; gap: 5px; margin-bottom: 16px; }
-    .tier-mark i { display: block; width: 4px; height: 20px; border-radius: 2px; background: var(--t3); }
-    .tier.top .tier-mark i { background: var(--g); }
-    .tier.top .tier-mark i:nth-child(5) { transform: rotate(24deg) scaleY(1.1); }
+    .tier-name { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--t3); margin-bottom: 10px; }
+    .tier.top .tier-name { background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     .tier h3 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; }
     .tier .rate { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 10px 0 2px; }
     .tier .rate small { font-size: 0.9rem; font-weight: 700; color: var(--t3); letter-spacing: 0; }
@@ -132,25 +122,24 @@
         <span>Tally</span>
         <small>Club</small>
       </a>
-      <a class="btn sm" href="#join"><span>Apply to join</span></a>
+      <a class="btn sm" data-club-apply href="#join" target="_blank" rel="noopener"><span>Join</span></a>
     </div>
   </header>
 
   <main>
     <section class="hero wrap">
-      <div class="marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <span class="pill">Invitation only</span>
+      <span class="pill">Now open</span>
       <h1>Share Tally with<br>the people who <span class="grad">trust you.</span></h1>
       <p class="lead">
-        Club Tally is a small group of creators who put Tally in front of their own audience.
+        Club Tally is a group of creators who put Tally in front of their own audience.
         You get paid every month your people stay, you get a real discount to hand them,
         and you get Tally free for as long as you're in.
       </p>
       <div class="hero-actions">
-        <a class="btn lg" href="#join"><span>Apply to join</span></a>
+        <a class="btn lg" data-club-apply href="#join" target="_blank" rel="noopener"><span>Join Club Tally</span></a>
         <a class="btn-ghost" href="#tiers">See what it pays</a>
       </div>
-      <div class="hero-note">We read every application ourselves. No follower minimum.</div>
+      <div class="hero-note">Signing up takes a minute. No follower minimum.</div>
     </section>
 
     <!-- What you get -->
@@ -187,7 +176,7 @@
         </div>
         <div class="tiers">
           <div class="tier">
-            <div class="tier-mark"><i></i></div>
+            <div class="tier-name">Rung one</div>
             <h3>Silver</h3>
             <div class="rate">15%<small> for life</small></div>
             <div class="rate-sub">on every subscription you send, for as long as they stay</div>
@@ -198,7 +187,7 @@
             </ul>
           </div>
           <div class="tier">
-            <div class="tier-mark"><i></i><i></i><i></i></div>
+            <div class="tier-name">Rung two</div>
             <h3>Gold</h3>
             <div class="rate">20%<small> for life</small></div>
             <div class="rate-sub">applied to new and existing referrals</div>
@@ -209,7 +198,7 @@
             </ul>
           </div>
           <div class="tier top">
-            <div class="tier-mark"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="tier-name">Top rung</div>
             <h3>Platinum</h3>
             <div class="rate">25%<small> for life</small></div>
             <div class="rate-sub">plus 5% of what the creators you bring in earn</div>
@@ -236,8 +225,8 @@
       <div class="steps">
         <div class="step">
           <div class="num">1</div>
-          <h3>Apply and get your link</h3>
-          <p>Tell us who you are and where your people are. If it fits, you get a link and a discount code that carry your name.</p>
+          <h3>Sign up and get your link</h3>
+          <p>Tell us who you are and where your people are. You get a link and a discount code that carry your name, and a dashboard to watch them work.</p>
         </div>
         <div class="step">
           <div class="num">2</div>
@@ -284,7 +273,7 @@
     <section class="block wrap" id="join">
       <div class="section-head">
         <h2>Come in.</h2>
-        <p>Applications are read by a person, usually within a couple of days.</p>
+        <p>Sign up, get your link, and start sharing. It takes about a minute.</p>
       </div>
       <div class="signup" style="text-align:center;">
         <!-- ── SIGNUP: link-out today, embed when the plan allows ──────────────
@@ -299,7 +288,7 @@
                   (FP → Promoters → "Get login and signup links")
         -->
         <a class="btn lg" data-club-apply href="#join" target="_blank" rel="noopener">
-          <span>Apply to Club Tally</span>
+          <span>Join Club Tally</span>
         </a>
 
         <!-- <iframe id="club-embed" src="" height="850" width="100%" frameborder="0" allow="clipboard-write"></iframe> -->
@@ -311,9 +300,9 @@
     </section>
 
     <div class="cta-banner wrap">
-      <h2>Five marks. One club.</h2>
-      <p>If Tally is already the thing you'd recommend, you should be getting paid for it.</p>
-      <a class="btn-inv" href="#join">Apply to join</a>
+      <h2>You already recommend it.</h2>
+      <p>If Tally is the thing you'd tell a friend to use, you should be getting paid for it.</p>
+      <a class="btn-inv" data-club-apply href="#join" target="_blank" rel="noopener">Join Club Tally</a>
     </div>
   </main>
 
