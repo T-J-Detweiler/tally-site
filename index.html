@@ -427,22 +427,27 @@
     // account pin → creator name + their real tracking code. Memoized; shows the greeting
     // chip on whichever step is up. ATTRIBUTION drives everything — the user never has to
     // know a code exists.
-    function showRefChip() {
+    // The referred welcome. It used to be a `house-card` above the title: gradient ring,
+    // gradient text, centered and bold, which read as a BUTTON people tried to tap. The name
+    // is the headline now, and the sub-line says the two things a referred visitor actually
+    // needs to know: you are making an account, and here is what you get for it.
+    function renderRefGreeting() {
       try {
-        var host = document.getElementById('su-step-email');
-        var card = host && host.parentNode;
-        if (!card || document.getElementById('su-ref-chip')) return;
-        var chip = document.createElement('div');
-        chip.id = 'su-ref-chip';
-        chip.className = 'house-card';       // surface + gradient ring, from /tally.css
-        chip.style.marginBottom = '14px';
-        var span = document.createElement('span');
-        span.className = 'grad';
-        span.textContent = window._refName ? (window._refName + ' sent you') : 'You’re invited';
-        chip.appendChild(span);
-        card.insertBefore(chip, card.firstChild);
+        var t = document.getElementById('su-email-title'), s = document.getElementById('su-email-sub');
+        if (!t || !s || !window._refName) return;
+        t.innerHTML = '<span class="grad">' + esc(window._refName) + '</span> sent you.';
+        t.style.fontSize = '1.6rem';
+        var deal = window._refPct ? (esc(window._refName) + '’s ' + window._refPct + '% off') : 'your free trial';
+        var lead = window._refPct
+          ? 'Create your account to get your free trial and <b>' + deal + '</b>.'
+          : 'Create your account and get your 5 day free trial.';
+        var fine = window._refPct
+          ? '5 days free, then $19.99/mo with your discount applied. We’ll email you a code to sign in.'
+          : '5 days free, then $19.99/mo. Cancel anytime. We’ll email you a code to sign in.';
+        s.innerHTML = lead + '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + fine + '</div>';
       } catch (_) {}
     }
+    function esc(v) { var d = document.createElement('div'); d.textContent = String(v == null ? '' : v); return d.innerHTML; }
     async function ensureRefData() {
       if (window._refDataP) return window._refDataP;
       window._refDataP = (async function () {
@@ -453,7 +458,17 @@
             if (i.name && !window._refName) window._refName = i.name;
             if (i.coupon) window._refCoupon = i.coupon;
           }
-          if (window._refName || window._refCoupon) showRefChip();
+          // Price the creator's coupon NOW, so the welcome can name the number ("Steph's 20%
+          // off") instead of waving at "a discount". A commission-only affiliate carries no
+          // coupon, so _refPct stays 0 and we never promise what they don't have.
+          if (window._refCoupon && !window._refPct) {
+            try {
+              var r = await fetch(WORKER + '/promo-check?code=' + encodeURIComponent(window._refCoupon));
+              var d = await r.json();
+              if (d && d.valid && d.percentOff) window._refPct = d.percentOff;
+            } catch (_) {}
+          }
+          renderRefGreeting();
         } catch (_) {}
         return true;
       })();
@@ -618,13 +633,7 @@
       // Someone already signed in has an account; don't sell them a trial they're on.
       try { var s = await sb().auth.getSession(); if (s.data && s.data.session) return; } catch (_) {}
       openSignup();
-      try {
-        // Only promise a discount when the affiliate actually carries one — an affiliate
-        // with no tracking coupon is commission-only and their visitors pay sticker.
-        document.getElementById('su-email-title').textContent = window._refCoupon ? 'Claim your free trial' : 'Start your free trial';
-        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free.' + (window._refCoupon ? ' Create your account and your discount is applied at checkout, on the next screen.' : ' Enter your email and we’ll send you a sign-in code.');
-        showRefChip();
-      } catch (_) {}
+      renderRefGreeting();   // ensureRefData() above already resolved the name + the discount %
     })();
     function openWebApp() { window.location.href = APP_URL; }
     function suHideSteps() { ['email','code','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
@@ -637,8 +646,15 @@
     function suSetEmailCopy() {
       var t = document.getElementById('su-email-title'), s = document.getElementById('su-email-sub');
       if (!t || !s) return;
-      if (_intent === 'subscribe') { t.textContent = 'Sign in to subscribe'; s.textContent = 'Enter your email and we’ll send a code to log in. Then you pick your plan. (Your trial’s already going; this just sets up payment.)'; }
-      else { t.textContent = 'Start your free trial'; s.textContent = '5 days free, then $19.99/mo. Cancel anytime. Enter your email and we’ll send you a sign-in code.'; }
+      if (_intent === 'subscribe') {
+        t.textContent = 'Sign in to subscribe'; t.style.fontSize = '';
+        s.textContent = 'Enter your email and we’ll send a code to log in. Then you pick your plan. (Your trial’s already going; this just sets up payment.)';
+        return;
+      }
+      t.textContent = 'Create your account'; t.style.fontSize = '';
+      s.innerHTML = 'Get your 5 day free trial. Cancel anytime.' +
+        '<div style="font-size:0.85rem;color:#999;margin-top:8px;">Then $19.99/mo. We’ll email you a code to sign in.</div>';
+      renderRefGreeting();   // a known referrer overrides both lines with their own welcome
     }
     function openSignup() { _intent = 'trial'; document.getElementById('signup-overlay').style.display = 'flex'; suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
     async function openSubscribe() {
