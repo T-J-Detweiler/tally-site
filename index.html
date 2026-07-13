@@ -311,14 +311,14 @@
     </div>
   </footer>
 
-  <!-- ── Signup funnel ── email magic-link → starts the cardless free trial → get the app ── -->
+  <!-- ── Signup funnel ── email code → plan → card → trial starts → get the app ── -->
   <div id="signup-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(20,0,40,0.55);align-items:center;justify-content:center;padding:22px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);">
     <div style="background:#fff;border-radius:22px;max-width:400px;width:100%;padding:32px 26px;box-shadow:0 30px 80px rgba(0,0,0,0.35);position:relative;box-sizing:border-box;">
       <button onclick="closeSignup()" aria-label="Close" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;color:#bbb;cursor:pointer;line-height:1;">&times;</button>
 
       <div id="su-step-email">
         <div id="su-email-title" style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Start your free trial</div>
-        <div id="su-email-sub" style="color:#666;font-size:0.95rem;margin-bottom:20px;">5 days free, no card needed. Enter your email and we&rsquo;ll send you a sign-in code.</div>
+        <div id="su-email-sub" style="color:#666;font-size:0.95rem;margin-bottom:20px;">5 days free, then $19.99/mo. Cancel anytime. Enter your email and we&rsquo;ll send you a sign-in code.</div>
         <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1rem;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suSendCode()">
         <button id="su-send-btn" class="btn block" onclick="suSendCode()"><span>Email me a code</span></button>
       </div>
@@ -328,14 +328,6 @@
         <div style="color:#666;font-size:0.95rem;margin-bottom:20px;">We sent a verification code to <b id="su-email-echo"></b>.</div>
         <input id="su-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Verification code" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1.1rem;letter-spacing:0.12em;text-align:center;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suVerify()">
         <button id="su-verify-btn" class="btn block" onclick="suVerify()"><span>Verify &amp; start</span></button>
-      </div>
-
-      <div id="su-step-done" style="display:none;text-align:center;">
-        <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
-        <div id="su-done-sub" style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your 5-day free trial has started. No card needed. Sign in to Tally with this same email.</div>
-        <button id="su-done-primary" class="btn block" style="margin-bottom:12px;" onclick="openWebApp()"><span>Open Tally</span></button>
-        <div id="su-done-note" style="color:#999;font-size:0.85rem;">iPhone &amp; Android apps are coming soon to the App Store &amp; Google Play.</div>
       </div>
 
       <div id="su-step-plan" style="display:none;">
@@ -368,11 +360,16 @@
         <div style="text-align:center;color:#aaa;font-size:0.78rem;margin-top:10px;">Secured by Stripe &middot; cancel anytime</div>
       </div>
 
+      <!-- The finish line. Card is in, the trial is running, and this is the ONLY screen that
+           hands over the app. renderSubscribed() fills the headline (discount + charge date) and
+           routes the button by device: iPhone to the App Store, Android to Google Play, desktop
+           to the web app. -->
       <div id="su-step-subscribed" style="display:none;text-align:center;">
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re subscribed</div>
-        <div style="color:#666;font-size:0.95rem;margin-bottom:22px;">Thanks for going Tally. Open the app and keep going.</div>
-        <button class="btn block" onclick="openWebApp()"><span>Open Tally on the web</span></button>
+        <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
+        <div id="su-sub-headline" style="color:#666;font-size:0.95rem;margin-bottom:22px;">Your free trial has started.</div>
+        <button id="su-sub-primary" class="btn block" style="margin-bottom:12px;" onclick="openWebApp()"><span>Open Tally</span></button>
+        <div id="su-sub-note" style="color:#999;font-size:0.85rem;"></div>
       </div>
 
       <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
@@ -475,14 +472,21 @@
     // amount due, what the code does, and WHEN the charge happens (a mid-trial subscriber's
     // card is charged when the free trial ends, not today — say so, never surprise).
     function suDueText() {
+      var end = suTrialEndStr();
+      return end ? 'charged ' + end + ' when your free trial ends' : 'billed today';
+    }
+    // The trial's last day, as "Jul 18", or '' if the 5 days are already spent (card added late,
+    // so the charge is immediate). Signup date comes from Supabase's server-issued created_at,
+    // never the device clock.
+    function suTrialEndStr() {
       try {
         var c = _user && _user.created_at ? new Date(_user.created_at) : null;
         if (c) {
           var end = new Date(c.getTime() + 5 * 86400000);
-          if (end > new Date()) return 'charged ' + end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' when your free trial ends';
+          if (end > new Date()) return end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         }
       } catch (_) {}
-      return 'billed today';
+      return '';
     }
     function suPlanLine() {
       var el = document.getElementById('su-plan-line');
@@ -564,21 +568,35 @@
       suRenderPlanCards();
     }
     (function () { var box = document.getElementById('su-promo'); if (box) box.addEventListener('input', suPromoChanged); })();
-    // Store links — set the moment each approval lands; while empty, the web app is the path.
-    var STORE_IOS = '';
-    var STORE_ANDROID = '';
-    // "You're in" step, routed by device: this is ultimately an iPhone app — phones get the
-    // store download as the headline, desktop keeps a "continue on desktop" path.
-    function renderDone() {
+    // Store links — both listings are LIVE.
+    var STORE_IOS = 'https://apps.apple.com/us/app/tally-easy-calorie-tracking/id6784712826';
+    var STORE_ANDROID = 'https://play.google.com/store/apps/details?id=com.tallyapplications.tally';
+    // The post-card handover, routed by device. Phones get their own store as the headline (Tally
+    // is a phone app); a desktop signup gets the web app and is told the phone apps exist.
+    //
+    // WHY THE CARD COMES FIRST (and why there is no cardless "you're in" step any more): a
+    // cardless trial delivers the customer to the payment moment on DAY 5, by which point they
+    // are usually sitting in the iPhone app, where Apple 3.1.1 allows only the IAP sheet. An
+    // affiliate who promised 20% off would have sent them somewhere the discount is impossible to
+    // honor and illegal to explain. Taking the card at signup locks the customer to Stripe before
+    // Apple ever sees them, so the discount lands where it was promised and no commission is paid
+    // on a discounted sale. IAP therefore only ever serves an organic App Store walk-up.
+    function renderSubscribed() {
       try {
         var ua = navigator.userAgent || '';
         var ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
-        var btn = document.getElementById('su-done-primary'), note = document.getElementById('su-done-note'), sub = document.getElementById('su-done-sub');
-        if (window._refName) sub.textContent = 'Your 5-day free trial has started. No card needed, and ' + window._refName + '’s discount stays attached to your account for checkout.';
-        if (ios && STORE_IOS) { btnLabel(btn, 'Download Tally on the App Store'); btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
-        else if (android && STORE_ANDROID) { btnLabel(btn, 'Get Tally on Google Play'); btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Continue on the web</a>.'; }
-        else if (!ios && !android && (STORE_IOS || STORE_ANDROID)) { btnLabel(btn, 'Continue on desktop'); note.textContent = 'Tally is also on your phone, on the App Store and Google Play.'; }
-        else { btnLabel(btn, 'Open Tally'); note.textContent = 'The Tally app hits the App Store and Google Play any day now. Until then, Tally runs right here on the web.'; }
+        var btn = document.getElementById('su-sub-primary'),
+            note = document.getElementById('su-sub-note'),
+            head = document.getElementById('su-sub-headline');
+        var end = suTrialEndStr();
+        head.textContent = 'Your 5-day free trial has started'
+          + (window._promoInfo && window._promoInfo.valid ? ', with your discount applied' : '')
+          + '. Your card is on file and nothing is charged'
+          + (end ? ' until ' + end : ' until your trial ends') + '. Now go get tallying.';
+        var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;">Open Tally on the web</a>.';
+        if (ios && STORE_IOS) { btnLabel(btn, 'Download Tally on the App Store'); btn.onclick = function () { location.href = STORE_IOS; }; note.innerHTML = web; }
+        else if (android && STORE_ANDROID) { btnLabel(btn, 'Get Tally on Google Play'); btn.onclick = function () { location.href = STORE_ANDROID; }; note.innerHTML = web; }
+        else { btnLabel(btn, 'Open Tally on the web'); btn.onclick = openWebApp; note.innerHTML = 'On your phone? Get Tally on the <a href="' + STORE_IOS + '" style="color:#7B00FF;">App Store</a> or <a href="' + STORE_ANDROID + '" style="color:#7B00FF;">Google Play</a>.'; }
       } catch (_) {}
     }
     // Referred arrivals skip the brochure: the signup sheet opens immediately with the
@@ -604,20 +622,23 @@
         // Only promise a discount when the affiliate actually carries one — an affiliate
         // with no tracking coupon is commission-only and their visitors pay sticker.
         document.getElementById('su-email-title').textContent = window._refCoupon ? 'Claim your free trial' : 'Start your free trial';
-        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free, no card needed.' + (window._refCoupon ? ' Create your account and your discount stays attached for checkout.' : ' Enter your email and we’ll send you a sign-in code.');
+        document.getElementById('su-email-sub').textContent = (window._refName ? window._refName + ' sent you: ' : '') + '5 days free.' + (window._refCoupon ? ' Create your account and your discount is applied at checkout, on the next screen.' : ' Enter your email and we’ll send you a sign-in code.');
         showRefChip();
       } catch (_) {}
     })();
     function openWebApp() { window.location.href = APP_URL; }
-    function suHideSteps() { ['email','code','done','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
-    function suShow(step) { suHideSteps(); var e = document.getElementById('su-step-' + step); if (e) e.style.display = 'block'; }
+    function suHideSteps() { ['email','code','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
+    // The subscribed step renders itself. There are two ways to reach it (inline confirm and the
+    // 3-D Secure redirect return), and a store link that only worked on one of them would be the
+    // easiest bug in the world to ship.
+    function suShow(step) { suHideSteps(); var e = document.getElementById('su-step-' + step); if (e) e.style.display = 'block'; if (step === 'subscribed') renderSubscribed(); }
     function closeSignup() { document.getElementById('signup-overlay').style.display = 'none'; }
 
     function suSetEmailCopy() {
       var t = document.getElementById('su-email-title'), s = document.getElementById('su-email-sub');
       if (!t || !s) return;
       if (_intent === 'subscribe') { t.textContent = 'Sign in to subscribe'; s.textContent = 'Enter your email and we’ll send a code to log in. Then you pick your plan. (Your trial’s already going; this just sets up payment.)'; }
-      else { t.textContent = 'Start your free trial'; s.textContent = '5 days free, no card needed. Enter your email and we’ll send you a sign-in code.'; }
+      else { t.textContent = 'Start your free trial'; s.textContent = '5 days free, then $19.99/mo. Cancel anytime. Enter your email and we’ll send you a sign-in code.'; }
     }
     function openSignup() { _intent = 'trial'; document.getElementById('signup-overlay').style.display = 'flex'; suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
     async function openSubscribe() {
@@ -650,7 +671,10 @@
         if (r.error) throw r.error;
         try { var u = await sb().auth.getUser(); _user = u.data && u.data.user; } catch (_) {}
         fpReferral();
-        if (_intent === 'subscribe') suShowPlan(); else { suShow('done'); renderDone(); }
+        // ONE path now: the card goes in at signup, so a verified email always lands on the plan
+        // step. (`_intent` survives only to word the email screen — 'subscribe' is the app's
+        // handoff for someone already mid-trial who is coming back to pay.)
+        suShowPlan();
       } catch (e) { err.textContent = (e && e.message) || 'That code did not work — try again.'; btn.disabled = false; btnLabel(btn, 'Verify & start'); }
     }
 
