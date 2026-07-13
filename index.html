@@ -165,6 +165,12 @@
        matched visual height needs Google rendered taller, with the surplus pulled back out
        by a negative margin. Do not "fix" that by cropping their artwork; the clear space is
        mandated by Google's brand guidelines. */
+    /* The sheet opens on generic copy and the creator's name arrives a beat later. Fade it in so
+       it reads as personalising, not as a glitch. */
+    @keyframes su-greet-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+    .su-greet-in { animation: su-greet-in 0.28s ease both; }
+    @media (prefers-reduced-motion: reduce) { .su-greet-in { animation: none; } }
+
     .store-badges { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
     .store-badges a { display: inline-flex; align-items: center; text-decoration: none; }
     .store-badges img { display: block; }
@@ -492,6 +498,7 @@
           ? 'Create your account to get 5 days free and <b>' + esc(window._refName) + '’s ' + window._refPct + '% off</b>.'
           : 'Create your account and get 5 days free.';
         s.innerHTML = lead + '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
+        [t, s].forEach(function (el) { el.classList.remove('su-greet-in'); void el.offsetWidth; el.classList.add('su-greet-in'); });
       } catch (_) {}
     }
     function esc(v) { var d = document.createElement('div'); d.textContent = String(v == null ? '' : v); return d.innerHTML; }
@@ -501,19 +508,10 @@
         try {
           var ref = await accountRef();
           if (ref && !window._refCoupon) {
-            var i = await refInfo(ref);
+            var i = await refInfo(ref);   // name + code + what the code is worth, in ONE cached call
             if (i.name && !window._refName) window._refName = i.name;
             if (i.coupon) window._refCoupon = i.coupon;
-          }
-          // Price the creator's coupon NOW, so the welcome can name the number ("Steph's 20%
-          // off") instead of waving at "a discount". A commission-only affiliate carries no
-          // coupon, so _refPct stays 0 and we never promise what they don't have.
-          if (window._refCoupon && !window._refPct) {
-            try {
-              var r = await fetch(WORKER + '/promo-check?code=' + encodeURIComponent(window._refCoupon));
-              var d = await r.json();
-              if (d && d.valid && d.percentOff) window._refPct = d.percentOff;
-            } catch (_) {}
+            if (i.percentOff) window._refPct = i.percentOff;
           }
           renderRefGreeting();
         } catch (_) {}
@@ -693,15 +691,22 @@
     // every referred visitor (and the owner, after testing his own link) got the trial sheet
     // thrown at them on every single homepage visit for two months — subscribers included.
     // The cookie still does its real job below: greeting chip + discount prefill.
+    // OPEN THE SHEET FIRST, FETCH SECOND. This used to await the promoter lookup (and, briefly,
+    // a second Stripe call) BEFORE calling openSignup(), so a referred visitor landed on the
+    // homepage and stared at it for a beat before a card abruptly appeared. Now the sheet is up
+    // on the same frame as the click, already saying the true, generic thing ("Create your
+    // account. Get 5 days free."), and the creator's name and discount land INTO it a moment
+    // later. Nothing pops; the greeting just personalises in place.
     (async function refWelcome() {
       var fresh = window._freshRef || '';
       if (!fresh && !fpCookie('_fprom_ref')) return;
-      await ensureRefData();          // chip + coupon prefill for ANY known referral
-      if (!fresh) return;             // returning visitor: data yes, ambush no
-      // Someone already signed in has an account; don't sell them a trial they're on.
-      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) return; } catch (_) {}
-      openSignup();
-      renderRefGreeting();   // ensureRefData() above already resolved the name + the discount %
+      if (!fresh) { ensureRefData(); return; }   // returning visitor: prefill the data, no ambush
+      // Someone already signed in has an account; don't sell them a trial they're on. This is a
+      // LOCAL session read (no network), so it costs nothing and cannot stall the open.
+      try { var s = await sb().auth.getSession(); if (s.data && s.data.session) { ensureRefData(); return; } } catch (_) {}
+      openSignup();                 // immediately, on the generic copy
+      await ensureRefData();        // then upgrade it to "Steph sent you." in place
+      renderRefGreeting();
     })();
     function openWebApp() { window.location.href = APP_URL; }
     function suHideSteps() { ['email','code','plan','card','subscribed'].forEach(function(s){ var e = document.getElementById('su-step-' + s); if (e) e.style.display = 'none'; }); var er = document.getElementById('su-err'); if (er) er.textContent = ''; }
