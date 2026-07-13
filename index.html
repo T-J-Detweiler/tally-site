@@ -662,13 +662,43 @@
     // honor and illegal to explain. Taking the card at signup locks the customer to Stripe before
     // Apple ever sees them, so the discount lands where it was promised and no commission is paid
     // on a discounted sale. IAP therefore only ever serves an organic App Store walk-up.
-    function appleBadge() {
-      return '<a href="' + STORE_IOS + '" aria-label="Download Tally on the App Store">' +
+    function appleBadge(handoff) {
+      return '<a href="' + STORE_IOS + '"' + (handoff ? ' onclick="return storeHandoff(event, STORE_IOS)"' : '') + ' aria-label="Download Tally on the App Store">' +
              '<img class="badge-apple" src="/badges/app-store.svg" alt="Download on the App Store"></a>';
     }
-    function googleBadge() {
-      return '<a href="' + STORE_ANDROID + '" aria-label="Get Tally on Google Play">' +
+    function googleBadge(handoff) {
+      return '<a href="' + STORE_ANDROID + '"' + (handoff ? ' onclick="return storeHandoff(event, STORE_ANDROID)"' : '') + ' aria-label="Get Tally on Google Play">' +
              '<img class="badge-google" src="/badges/google-play.png" alt="Get it on Google Play"></a>';
+    }
+    // THE CLIPBOARD HANDOFF. Tapping the badge is a user gesture, which is exactly what the
+    // clipboard API requires, and it is the last moment we will ever have this person's
+    // attention on the web. So we spend it: mint a single-use code and put it on the clipboard.
+    // The app's login screen reads it and signs them in, so they never type an email or a
+    // verification code a second time.
+    //
+    // The write is AWAITED before we navigate — a promise left in flight when the page unloads
+    // is a promise that never lands. Anything goes wrong (no clipboard API, permission denied,
+    // worker down) and we just navigate to the store: they get the ordinary email login, which
+    // is exactly today's behaviour. This can only ever add.
+    function storeHandoff(ev, dest) {
+      try {
+        ev.preventDefault();
+        (async function () {
+          try {
+            var s = await sb().auth.getSession();
+            var sess = s.data && s.data.session;
+            if (sess && navigator.clipboard && navigator.clipboard.writeText) {
+              var r = await fetch(WORKER + '/app-handoff', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: sess.user.id, accessToken: sess.access_token }) });
+              var d = await r.json();
+              if (d && d.code) await navigator.clipboard.writeText('tally-signin-' + d.code);
+            }
+          } catch (_) {}
+          location.href = dest;
+        })();
+      } catch (_) { location.href = dest; }
+      return false;
     }
     // Homepage badges. Both always shown here (unlike the handover screen, which routes by
     // device) because this is a shop window, not a handover: a visitor on a laptop still needs
@@ -707,19 +737,20 @@
           + '. Your card is on file and nothing is charged'
           + (end ? ' until ' + end : ' until your trial ends') + '.';
         var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">Open Tally on the web</a>.';
+        var signedIn = 'Open it and tap <b>“Continue from the web”</b> — you’re already signed in, no code needed.';
         if (ios) {
           cta.textContent = 'Download Tally and start tallying.';
-          badges.innerHTML = appleBadge();
-          note.innerHTML = web;
+          badges.innerHTML = appleBadge(true);
+          note.innerHTML = '<div style="color:#666;margin-bottom:8px;">' + signedIn + '</div>' + web;
         } else if (android) {
           cta.textContent = 'Download Tally and start tallying.';
-          badges.innerHTML = googleBadge();
-          note.innerHTML = web;
+          badges.innerHTML = googleBadge(true);
+          note.innerHTML = '<div style="color:#666;margin-bottom:8px;">' + signedIn + '</div>' + web;
         } else {
           // Desktop. They can start on the web right now, but Tally is a phone app, so both
           // badges are the real invitation and the web link is the runner-up.
           cta.textContent = 'Get Tally on your phone and start tallying.';
-          badges.innerHTML = appleBadge() + googleBadge();
+          badges.innerHTML = appleBadge(true) + googleBadge(true);
           note.innerHTML = 'Or <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">open Tally on the web</a> right now.';
         }
       } catch (_) {}
