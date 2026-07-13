@@ -680,23 +680,37 @@
     // is a promise that never lands. Anything goes wrong (no clipboard API, permission denied,
     // worker down) and we just navigate to the store: they get the ordinary email login, which
     // is exactly today's behaviour. This can only ever add.
+    // MINT THE CODE BEFORE THE TAP. Safari only permits a clipboard write INSIDE the user's
+    // gesture, and it treats the gesture as over the moment you await anything. The first
+    // version fetched the session and called the worker first, so by the time it reached
+    // writeText, WebKit had silently revoked permission and nothing landed on the clipboard.
+    // (Chrome is lenient here; Safari is not, and Safari is the whole iPhone.)
+    //
+    // So the code is minted when the "You're in" screen renders. By the time they tap the
+    // badge, it is sitting in a variable and the write is the first thing that happens.
+    var _handoffCode = '';
+    async function primeHandoff() {
+      try {
+        if (_handoffCode) return;
+        var s = await sb().auth.getSession();
+        var sess = s.data && s.data.session;
+        if (!sess) return;
+        var r = await fetch(WORKER + '/app-handoff', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: sess.user.id, accessToken: sess.access_token }) });
+        var d = await r.json();
+        if (d && d.code) _handoffCode = 'tally-signin-' + d.code;
+      } catch (_) {}
+    }
     function storeHandoff(ev, dest) {
+      // No clipboard code ready? Let the link do what links do. They get the email login.
+      if (!_handoffCode || !navigator.clipboard) return true;
       try {
         ev.preventDefault();
-        (async function () {
-          try {
-            var s = await sb().auth.getSession();
-            var sess = s.data && s.data.session;
-            if (sess && navigator.clipboard && navigator.clipboard.writeText) {
-              var r = await fetch(WORKER + '/app-handoff', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: sess.user.id, accessToken: sess.access_token }) });
-              var d = await r.json();
-              if (d && d.code) await navigator.clipboard.writeText('tally-signin-' + d.code);
-            }
-          } catch (_) {}
-          location.href = dest;
-        })();
+        // SYNCHRONOUS inside the gesture. Nothing may be awaited before this line.
+        var p = navigator.clipboard.writeText(_handoffCode);
+        var go = function () { location.href = dest; };
+        if (p && p.then) p.then(go, go); else go();
       } catch (_) { location.href = dest; }
       return false;
     }
@@ -724,6 +738,7 @@
     }
     refStoreNote();
     function renderSubscribed() {
+      primeHandoff();          // have the clipboard code in hand BEFORE they tap the badge
       try {
         var ua = navigator.userAgent || '';
         var ios = /iPhone|iPad|iPod/.test(ua), android = /Android/.test(ua);
