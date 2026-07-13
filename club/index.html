@@ -338,8 +338,11 @@
     // The ONE place the FirstPromoter portal URLs live.
     // Grab both from FP → Promoters → "Get login and signup links".
     // ─────────────────────────────────────────────────────────────
-    var CLUB_SIGNUP_URL = '';   // e.g. https://tally.firstpromoter.com/signup/club-tally/<id>
-    var CLUB_LOGIN_URL  = '';   // e.g. https://tally.firstpromoter.com/login
+    // FirstPromoter's hosted portal. The signup page already carries the Club Tally branding
+    // ("Welcome to Club Tally"); the rest of the theming is FP dashboard config, not code —
+    // the kit is in the Tally repo at store-assets/club-portal/BRANDING.md.
+    var CLUB_SIGNUP_URL = 'https://tallyapplications.firstpromoter.com/signup';
+    var CLUB_LOGIN_URL  = 'https://tallyapplications.firstpromoter.com/login';
 
     (function () {
       // Until the URLs are filled in, the apply button falls back to email so the page is
