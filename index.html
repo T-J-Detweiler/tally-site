@@ -344,7 +344,7 @@
 
       <div id="su-step-email">
         <div id="su-email-title" style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">Start your free trial</div>
-        <div id="su-email-sub" style="color:#666;font-size:0.95rem;margin-bottom:20px;">5 days free, then $19.99/mo. Cancel anytime. Enter your email and we&rsquo;ll send you a sign-in code.</div>
+        <div id="su-email-sub" style="color:#666;font-size:0.95rem;margin-bottom:20px;">5 days free. Cancel anytime.</div>
         <input id="su-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:14px;border:1.5px solid #e3e3e3;border-radius:12px;font-size:1rem;font-family:inherit;margin-bottom:12px;" onkeydown="if(event.key==='Enter')suSendCode()">
         <button id="su-send-btn" class="btn block" onclick="suSendCode()"><span>Email me a code</span></button>
       </div>
@@ -413,6 +413,11 @@
     var STRIPE_PK = 'pk_live_51TgrC2A1BiF94G1nP83P82NxyMPEQo1O9ZxpmxdE17a2dAa4P90hQawOUZf5qeMHN95aJ7qLf45jYqAfoWLG4zKR00W3Cr7aXL';
     var WORKER = 'https://tally-gemini.micahtarter.workers.dev';
     var APP_URL = 'https://app.tallyapplications.com';
+    // Says WHY the code exists. There is no password, so the emailed code both proves the
+    // address is real (a typo would otherwise lock someone out of the account they just paid
+    // for) and is how they sign in from then on. It also tells them the plan step is next,
+    // so the account screen never has to quote a price it cannot know yet.
+    var SU_CODE_NOTE = 'We’ll email you a code to make sure we have the right address. You’ll pick your plan next.';
     var _sb = null, _suEmail = '', _intent = 'trial', _user = null, _plan = 'annual', _stripe = null, _elements = null;
     function sb() { if (!_sb && window.supabase) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; }
     // House buttons paint their label through a child <span> that carries the gradient text
@@ -463,14 +468,13 @@
         if (!t || !s || !window._refName) return;
         t.innerHTML = '<span class="grad">' + esc(window._refName) + '</span> sent you.';
         t.style.fontSize = '1.6rem';
-        var deal = window._refPct ? (esc(window._refName) + '’s ' + window._refPct + '% off') : 'your free trial';
+        // No price here. There are two plans, and the customer picks one on the NEXT screen:
+        // quoting "$19.99/mo" before they have chosen is both premature and wrong for anyone
+        // who goes annual. Prices live on the plan step, where they can be compared.
         var lead = window._refPct
-          ? 'Create your account to get your free trial and <b>' + deal + '</b>.'
-          : 'Create your account and get your 5 day free trial.';
-        var fine = window._refPct
-          ? '5 days free, then $19.99/mo with your discount applied. We’ll email you a code to sign in.'
-          : '5 days free, then $19.99/mo. Cancel anytime. We’ll email you a code to sign in.';
-        s.innerHTML = lead + '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + fine + '</div>';
+          ? 'Create your account to get 5 days free and <b>' + esc(window._refName) + '’s ' + window._refPct + '% off</b>.'
+          : 'Create your account and get 5 days free.';
+        s.innerHTML = lead + '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
       } catch (_) {}
     }
     function esc(v) { var d = document.createElement('div'); d.textContent = String(v == null ? '' : v); return d.innerHTML; }
@@ -686,8 +690,8 @@
         return;
       }
       t.textContent = 'Create your account'; t.style.fontSize = '';
-      s.innerHTML = 'Get your 5 day free trial. Cancel anytime.' +
-        '<div style="font-size:0.85rem;color:#999;margin-top:8px;">Then $19.99/mo. We’ll email you a code to sign in.</div>';
+      s.innerHTML = 'Get 5 days free. Cancel anytime.' +
+        '<div style="font-size:0.85rem;color:#999;margin-top:8px;">' + SU_CODE_NOTE + '</div>';
       renderRefGreeting();   // a known referrer overrides both lines with their own welcome
     }
     function openSignup() { _intent = 'trial'; suOverlay(true); suShow('email'); suSetEmailCopy(); setTimeout(function(){ var e = document.getElementById('su-email'); if (e) e.focus(); }, 60); }
