@@ -24,9 +24,30 @@ in a separate session — do not touch it from here.
    Every gradient inside a `.club` subtree re-tints for free.
 
 4. **`/club` page** (`club/index.html`) — footer-linked only, never in the top nav.
-   Three rungs: Member 15% / Regular 20% / **Fifth Stroke** 25% + 5% override.
+   Three rungs: **Silver 15% / Gold 20% / Platinum 25%** + 5% override.
    **No subscriber thresholds** ("by invitation as your audience grows with us"), because
    thresholds are still unset. Copy follows the house rules: no em dashes, no "AI", no judgment.
+
+6. **FP signup + login URLs are WIRED** (`CLUB_SIGNUP_URL` / `CLUB_LOGIN_URL`). The "Sign in to
+   your dashboard" link renders as `href="#"` in the source and is rewritten on load, so it LOOKS
+   dead to anyone reading the HTML. It isn't. Login page verified 200.
+
+7. **The page shows dollars (2026-07-13).** "15% for life" is unpriceable without the sticker
+   price, so `.tier-math` does the worked example a creator actually cares about. Two facts it must
+   keep straight: Tally is **$129.99/yr**, and commission pays on **what the customer PAYS, not
+   sticker** — with a 15% code that's $110.49, so Silver earns ~$16.57/person/year, not $19.50.
+   The 15% code on the page is an EXAMPLE (the standard member discount is still an open decision
+   below); if that standard lands somewhere else, the perk copy and `.tier-math` both change.
+
+8. **Contact is `micah.tarter@tallyapplications.com`**, not the personal Gmail, on `/club` AND the
+   homepage footer. A page whose job is convincing strangers you'll pay them for years cannot ask
+   them to email a Gmail.
+
+9. **The App Store attribution question is answered honestly, not papered over.** There is NO
+   deferred deep linking, and a referred person who installs from the App Store and pays via IAP
+   earns their creator NOTHING (see the store-badge comment in `index.html`). So step 2 of "How it
+   actually works" says plainly that their people sign up on the WEB, where the discount lives and
+   the referral sticks. Never claim store installs are tracked. They are not.
 
 5. **Homepage free-trial popup bug FIXED.** It was the 60-day `_fprom_ref` cookie. `refWelcome()`
    auto-opened on `fpRef()`, which reads the cookie first, so every referred visitor got the
@@ -43,15 +64,11 @@ other session took that repo over. Read it there, don't recreate it here.
 
 ## Waiting on the owner (blockers — nothing else moves until these)
 
-1. **FP signup + login URLs.** Get them from FirstPromoter → Promoters → "Get login and signup
-   links." Paste into `CLUB_SIGNUP_URL` / `CLUB_LOGIN_URL` at the bottom of `club/index.html`.
-   Until then the Apply button falls back to a mailto so the page is never a dead end.
-
-2. **Plan check for the embedded signup form.** FP's docs are explicit: the embeddable signup
+1. **Plan check for the embedded signup form.** FP's docs are explicit: the embeddable signup
    form needs the **Business plan AND a custom domain** first. The `/club` page link-outs today;
    swapping to the `<iframe>` embed is a 3-line change, documented inline in `club/index.html`.
 
-3. **Portal CSS not written.** Making the FP portal itself pixel-match Tally needs custom CSS
+2. **Portal CSS not written.** Making the FP portal itself pixel-match Tally needs custom CSS
    against FP's DOM, which shouldn't be guessed. Paste the public signup-page URL and it can be
    done properly.
 
@@ -59,8 +76,9 @@ other session took that repo over. Read it there, don't recreate it here.
 
 ## Open decisions (no rush)
 
-- **Tier names.** "Member" and "Regular" are placeholders (mine). Only **Fifth Stroke** came
-  from the owner. One string each to change in `club/index.html`.
+- **The standard member discount.** The page currently uses **15% off as an EXAMPLE**. Each
+  promoter's real coupon comes from FirstPromoter's own records (`/promoter-info`), so until there
+  is one standard code for new members, the page cannot promise a specific number as fact.
 - **Tier thresholds.** Deliberately unstated on the page. First cohort is the calibration
   instrument (owner's framing).
 - **Club visibility.** Currently footer-link only (owner's choice). Nav link is a one-line add

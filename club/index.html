@@ -73,7 +73,17 @@
     }
     .tier.top li::before { border-color: #E8A93C; }
     .tier li b { color: var(--t1); font-weight: 700; }
-    .tier-note { text-align: center; color: var(--t3); font-size: 0.9rem; margin-top: 34px; }
+    /* The worked example. A creator can't price "15% for life" without the sticker price,
+       and the rate pays on what the customer ACTUALLY pays, not on sticker. Both live here. */
+    .tier-math {
+      max-width: 620px; margin: 38px auto 0; text-align: center;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 18px; padding: 26px 28px;
+    }
+    .tier-math h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; }
+    .tier-math p { font-size: 0.97rem; color: var(--t2); line-height: 1.65; }
+    .tier-math b { color: var(--t1); font-weight: 700; }
+
+    .tier-note { text-align: center; color: var(--t3); font-size: 0.9rem; margin-top: 26px; }
 
     /* ── How it works ── */
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
@@ -157,7 +167,7 @@
         <div class="card perk">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M9 15 15 9"/><circle cx="9.5" cy="9.5" r="1.6"/><circle cx="14.5" cy="14.5" r="1.6"/><rect x="3" y="3" width="18" height="18" rx="5"/></svg></div>
           <h3>A discount that's really yours</h3>
-          <p>Your link carries your own code, so your audience saves money the moment they arrive. You're bringing them something, not selling at them.</p>
+          <p>Your link carries your own code, so your audience saves money the moment they arrive. Say your code is 15% off: Tally is $129.99 a year, so your people pay $110.49. You're bringing them something, not selling at them.</p>
         </div>
         <div class="card perk">
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 14.6 8.6 21 9.4l-4.6 4.3 1.2 6.3L12 17l-5.6 3 1.2-6.3L3 9.4l6.4-.8z"/></svg></div>
@@ -209,6 +219,15 @@
             </ul>
           </div>
         </div>
+        <div class="tier-math">
+          <h3>What that looks like in dollars</h3>
+          <p>
+            Tally is <b>$129.99 a year</b>. Hand someone your 15% code and they pay <b>$110.49</b>,
+            and you earn your rate on what they actually pay. At Silver that's about
+            <b>$16.57 from that one person, every year they stay</b>. Fifty of them, still around in
+            three years, is roughly <b>$2,485</b> without posting again.
+          </p>
+        </div>
         <div class="tier-note">
           You move up as your audience grows with us. We watch the numbers so you don't have to, and
           we come to you.
@@ -231,7 +250,7 @@
         <div class="step">
           <div class="num">2</div>
           <h3>Share it how you already talk</h3>
-          <p>A caption, a story, a description, a pinned comment. Anyone who arrives through your link gets your discount automatically.</p>
+          <p>A caption, a story, a description, a pinned comment. Anyone who arrives through your link signs up on the web, where your discount is already filled in and your referral is on the account for good. They download the app after and sign in with the same email.</p>
         </div>
         <div class="step">
           <div class="num">3</div>
@@ -317,7 +336,7 @@
         <a href="/">Home</a> ·
         <a href="/terms.html">Terms</a> ·
         <a href="/privacy.html">Privacy</a> ·
-        <a href="mailto:micahtarter@gmail.com">Contact</a>
+        <a href="mailto:micah.tarter@tallyapplications.com">Contact</a>
       </div>
     </div>
   </footer>
@@ -339,7 +358,7 @@
       var apply = document.querySelectorAll('[data-club-apply]');
       for (var i = 0; i < apply.length; i++) {
         if (CLUB_SIGNUP_URL) { apply[i].href = CLUB_SIGNUP_URL; }
-        else { apply[i].href = 'mailto:micahtarter@gmail.com?subject=Club%20Tally%20application'; apply[i].removeAttribute('target'); }
+        else { apply[i].href = 'mailto:micah.tarter@tallyapplications.com?subject=Club%20Tally%20application'; apply[i].removeAttribute('target'); }
       }
       var login = document.querySelector('[data-club-login]');
       if (login) {
