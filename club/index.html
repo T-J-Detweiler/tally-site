@@ -74,14 +74,33 @@
     .tier.top li::before { border-color: #E8A93C; }
     .tier li b { color: var(--t1); font-weight: 700; }
     /* The worked example. A creator can't price "15% for life" without the sticker price,
-       and the rate pays on what the customer ACTUALLY pays, not on sticker. Both live here. */
+       and the rate pays on what the customer ACTUALLY pays, not on sticker. Both live here,
+       and the math is spelled out for EVERY rung at 1 / 5 / 10 people, so the climb is visible. */
     .tier-math {
-      max-width: 620px; margin: 38px auto 0; text-align: center;
+      max-width: 760px; margin: 38px auto 0;
       background: var(--bg); border: 1px solid var(--border); border-radius: 18px; padding: 26px 28px;
     }
-    .tier-math h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; }
-    .tier-math p { font-size: 0.97rem; color: var(--t2); line-height: 1.65; }
+    .tier-math h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; text-align: center; }
+    .tier-math p { font-size: 0.97rem; color: var(--t2); line-height: 1.65; text-align: center; }
     .tier-math b { color: var(--t1); font-weight: 700; }
+
+    .math-scroll { overflow-x: auto; margin: 22px 0 4px; }
+    table.math { width: 100%; border-collapse: collapse; text-align: right; }
+    table.math th, table.math td { padding: 13px 10px; border-bottom: 1px solid var(--border); }
+    table.math thead th {
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--t3); border-bottom: 1px solid var(--border);
+    }
+    table.math tbody tr:last-child th, table.math tbody tr:last-child td { border-bottom: 0; }
+    table.math .who { text-align: left; }
+    table.math .who b { display: block; font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
+    table.math .who span { display: block; font-size: 0.82rem; color: var(--t3); font-weight: 600; margin-top: 2px; }
+    table.math td { font-size: 1.02rem; font-weight: 700; color: var(--t1); white-space: nowrap; }
+    table.math td small { display: block; font-size: 0.72rem; font-weight: 600; color: var(--t3); }
+    /* The top rung is the destination. Let it glow, like the card does. */
+    table.math tr.top .who b { background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    table.math tr.top td { color: var(--t1); }
+    .math-foot { font-size: 0.92rem; color: var(--t2); line-height: 1.65; margin-top: 18px; text-align: center; }
 
     .tier-note { text-align: center; color: var(--t3); font-size: 0.9rem; margin-top: 26px; }
 
@@ -112,6 +131,12 @@
       .perks, .tiers, .steps, .fit { grid-template-columns: 1fr; }
       .hero { padding: 56px 0 44px; }
       .tier.top { box-shadow: 0 12px 30px var(--glow); }
+      .tier-math { padding: 24px 18px; }
+      table.math th, table.math td { padding: 12px 6px; }
+      table.math td { font-size: 0.92rem; }
+      table.math .who b { font-size: 0.94rem; }
+      table.math .who span { font-size: 0.76rem; }
+      table.math thead th { font-size: 0.66rem; letter-spacing: 0.05em; }
     }
   </style>
 </head>
@@ -222,10 +247,46 @@
         <div class="tier-math">
           <h3>What that looks like in dollars</h3>
           <p>
-            Tally is <b>$129.99 a year</b>. Hand someone your 15% code and they pay <b>$110.49</b>,
-            and you earn your rate on what they actually pay. At Silver that's about
-            <b>$16.57 from that one person, every year they stay</b>. Fifty of them, still around in
-            three years, is roughly <b>$2,485</b> without posting again.
+            Tally is <b>$129.99 a year</b>. Your people use your 15% code, so they pay <b>$110.49</b>,
+            and you earn your rate on what they actually pay. Here is every rung, worked out.
+          </p>
+          <div class="math-scroll">
+            <table class="math">
+              <thead>
+                <tr>
+                  <th class="who">Your rung</th>
+                  <th>1 person</th>
+                  <th>5 people</th>
+                  <th>10 people</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th class="who"><b>Silver</b><span>15% of $110.49</span></th>
+                  <td>$16.57<small>a year</small></td>
+                  <td>$82.87<small>a year</small></td>
+                  <td>$165.74<small>a year</small></td>
+                </tr>
+                <tr>
+                  <th class="who"><b>Gold</b><span>20% of $110.49</span></th>
+                  <td>$22.10<small>a year</small></td>
+                  <td>$110.49<small>a year</small></td>
+                  <td>$220.98<small>a year</small></td>
+                </tr>
+                <tr class="top">
+                  <th class="who"><b>Platinum</b><span>25% of $110.49</span></th>
+                  <td>$27.62<small>a year</small></td>
+                  <td>$138.11<small>a year</small></td>
+                  <td>$276.23<small>a year</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="math-foot">
+            Every number above lands <b>again next year</b>, and the year after, for as long as those
+            people stay. Ten people at Platinum who stick around three years is about <b>$829</b>, and
+            you only had to send them once. Climb to Gold and the raise applies to the people you
+            already sent, not just the next ones.
           </p>
         </div>
         <div class="tier-note">
