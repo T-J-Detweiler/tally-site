@@ -176,26 +176,39 @@
        doing a job of TRUST, not decoration. A code silently appearing on your clipboard is
        unnerving; a ticket you watched being handed to you is not the same event, even though
        it is the same event. */
+    /* THE TORN STUB — built as a TABLE, not flexbox.
+       The flex version was correct CSS (min-width:0, flex:none on the stub) and it STILL broke
+       on a Galaxy S8: an old Android engine dropped the stub below the content. Table cells
+       physically cannot wrap to a second line, on any engine, ever. So the stub is a table cell.
+       This is not elegance, it is a layout that cannot fail on the phone the customer owns.
+       (Masks — the "boarding pass" — would have been a bigger gamble on the same phone, not a
+       smaller one: mask-composite is exactly what old WebViews get wrong.) */
     .ticket {
-      display: flex; align-items: stretch; text-align: left; margin: 0 auto 18px; max-width: 340px;
+      display: table; width: 100%; max-width: 340px; margin: 0 auto 18px; text-align: left;
+      border-collapse: collapse; overflow: hidden;
       background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #7B00FF, #FF006E) border-box;
-      border: 1.5px solid transparent; border-radius: 12px; overflow: hidden;
+      border: 1.5px solid transparent; border-radius: 12px;
     }
-    .ticket-main { flex: 1; min-width: 0; padding: 13px 14px 12px; }
-    /* The stub. A dashed perforation splits it off, and the tick lives ON it — a validated
-       ticket, which is exactly what this object is. Two punched dents alone read as a card. */
+    .ticket-main {
+      display: table-cell; vertical-align: middle; padding: 12px 13px 11px;
+      /* The long code must ellipsis rather than force the cell wider than the phone. */
+      max-width: 0;
+    }
+    /* The stub: the torn-off half, split by the perforation. The tick lands HERE, because a
+       ticket with a tick on its stub is a ticket that has been validated. */
     .ticket-stub {
-      width: 76px; flex: none; display: flex; align-items: center; justify-content: center;
+      display: table-cell; vertical-align: middle; width: 74px; text-align: center;
+      padding: 10px 6px; white-space: nowrap;
       border-left: 2px dashed rgba(123,0,255,0.35);
       background: linear-gradient(135deg, rgba(123,0,255,0.06), rgba(255,0,110,0.06));
     }
     .ticket-stub-in {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      font-size: 0.58rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-      color: #bbb; text-align: center; line-height: 1.3;
+      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      color: #bbb; line-height: 1.35;
     }
     .ticket-stub-in.copied { color: #12b76a; }
-    .ticket-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .ticket-stub-in svg { display: block; margin: 0 auto 3px; }
+    .ticket-head { margin-bottom: 5px; }
     .ticket-label {
       font-size: 0.62rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
       background: linear-gradient(135deg, #7B00FF, #FF006E);
@@ -211,7 +224,7 @@
     .ticket-hint b { color: #1a1a1a; }
     /* The tick. Grows once, then sits there. */
     @keyframes ticket-pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
-    .ticket-stub-in.copied svg { animation: ticket-pop 0.32s ease both; display: block; }
+    .ticket-stub-in.copied svg { animation: ticket-pop 0.32s ease both; }
     @media (prefers-reduced-motion: reduce) { .ticket-stub-in.copied svg { animation: none; } }
 
     .store-badges { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
@@ -478,9 +491,9 @@
           <div class="ticket-main">
             <div class="ticket-head"><span class="ticket-label">Your Tally ticket</span></div>
             <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
-            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this for you when you tap below. In the app, tap the box, tap it <b>again</b>, and hit <b>Paste</b>.</div>
+            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this when you tap below.</div>
           </div>
-          <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in"><span>Ready</span></div></div>
+          <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in">Ready</div></div>
         </div>
         <div id="su-sub-cta" style="font-weight:700;font-size:1rem;color:#1a1a1a;margin-bottom:12px;">Download Tally and start tallying.</div>
         <div id="su-sub-badges" class="store-badges"></div>
@@ -764,7 +777,11 @@
     function showTicket(code) {
       var t = document.getElementById('su-ticket'), c = document.getElementById('ticket-code');
       if (!t || !c) return;
-      t.style.display = 'block';
+      // CLEAR the inline display, do NOT set 'block'. Setting it clobbers the stylesheet's
+      // layout (it killed `display:flex` on the first torn-stub build, which is why the stub
+      // stacked BELOW the content and looked broken — that was this line, not the phone).
+      // Empty string means "whatever the stylesheet says", which is the table.
+      t.style.display = '';
       c.textContent = code;                  // the real thing, in full. Nothing hidden.
     }
     var TICK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12b76a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -796,8 +813,8 @@
         // so being asked to paste in the app is expected instead of strange.
         var st = document.getElementById('ticket-state');
         var hint = document.getElementById('ticket-hint');
-        if (st) { st.className = 'ticket-stub-in copied'; st.innerHTML = TICK + '<span>Copied</span>'; }
-        if (hint) hint.innerHTML = 'Copied. Install Tally, then tap the box, tap it <b>again</b>, and hit <b>Paste</b>. No email, no code.';
+        if (st) { st.className = 'ticket-stub-in copied'; st.innerHTML = TICK + 'Copied'; }
+        if (hint) hint.textContent = 'Now install Tally and paste it in.';
         var target = storeDest(dest);
         var go = function () { setTimeout(function () { location.href = target; }, 550); };
         if (p && p.then) p.then(go, go); else go();
@@ -842,7 +859,7 @@
           + '. Your card is on file and nothing is charged'
           + (end ? ' until ' + end : ' until your trial ends') + '.';
         var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">Open Tally on the web</a>.';
-        var signedIn = 'We’ve copied your sign-in code. Open the app, <b>tap and hold</b> the box and choose <b>Paste</b>. No second sign-in email, you go straight to tallying.';
+        var signedIn = 'In the app, tap the box, tap it <b>again</b>, and hit <b>Paste</b>. No second sign-in email, you go straight to tallying.';
         if (ios) {
           cta.textContent = 'Download Tally and start tallying.';
           badges.innerHTML = appleBadge(true);
