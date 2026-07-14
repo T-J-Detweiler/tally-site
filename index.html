@@ -116,6 +116,12 @@
     .spot-list li { display: flex; gap: 11px; align-items: flex-start; font-size: 0.98rem; color: var(--t2); }
     .spot-list svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 4px; stroke: url(#fgrad); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
     .spot-list b { color: var(--t1); font-weight: 700; }
+    .spot-copy p.lead + p.lead { margin-top: -8px; }
+    .spot-kicker {
+      margin-top: 22px; padding: 14px 16px;
+      background: var(--accent-bg); border-left: 3px solid var(--purple); border-radius: 0 10px 10px 0;
+      font-size: 0.98rem; font-weight: 600; color: var(--t1);
+    }
     .shot { display: flex; justify-content: center; }
     .shot .phone { width: 274px; }
 
@@ -161,6 +167,45 @@
     .ap-serv .per { font-size: 0.58rem; color: var(--t2); }
     .ap-per { text-align: center; font-size: 0.62rem; color: var(--t2); margin-top: 9px; }
     .ap-per b { color: var(--purple); font-weight: 800; }
+
+    /* ── The speed band ──────────────────────────────────────────────
+       The thesis of the whole app, and it was nowhere on this page. Tally is not trying to
+       be the most thorough tracker, or the most scientific one. It is trying to be the
+       FASTEST. Convenience is the product; the numbers are table stakes.
+
+       It PROVES the claim instead of asserting it. "The fastest calorie tracker" is a
+       superlative a visitor cannot check and has heard from everyone. Tap counts are a fact:
+       one sentence, one tap, one photo. Let them do the arithmetic against the app they are
+       using today, which just made them search a database for a banana. */
+    .speed { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .speed-head { text-align: center; max-width: 640px; margin: 0 auto 46px; }
+    .speed-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .speed-head p { font-size: 1.08rem; color: var(--t2); }
+    .speed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .speed-item { text-align: center; padding: 26px 18px; background: var(--bg); border-radius: 18px; }
+    .speed-n {
+      font-size: clamp(1.5rem, 3vw, 1.9rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;
+      background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .speed-item p { font-size: 0.96rem; color: var(--t2); }
+    .speed-accuracy {
+      max-width: 700px; margin: 40px auto 0; text-align: center;
+      background: var(--accent-bg); border: 1px solid #f0d9ff; border-radius: 18px;
+      padding: 28px 26px;
+    }
+    .speed-accuracy h3 { font-size: clamp(1.15rem, 2.4vw, 1.4rem); font-weight: 800; letter-spacing: -0.01em; margin-bottom: 10px; }
+    .speed-accuracy p { font-size: 1rem; color: var(--t2); }
+    .speed-foot { text-align: center; font-size: 1.02rem; color: var(--t2); margin-top: 38px; }
+    .speed-foot b { color: var(--t1); font-weight: 700; }
+    .speed-challenge {
+      max-width: 620px; margin: 20px auto 0; padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem; color: var(--t2);
+    }
+    .speed-challenge a { color: var(--purple); font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .speed-challenge a:hover { text-decoration: underline; }
+    @media (max-width: 760px) { .speed-grid { grid-template-columns: 1fr; } }
 
     /* ── The discount door ──
        Loud on purpose. A gradient ring, a big headline, and the disclaimer in plain sight
@@ -381,12 +426,17 @@
   <main id="top">
     <!-- Hero -->
     <section class="hero wrap">
+      <!-- THE HERO IS THE THESIS, NOT A FEATURE. "Say what you ate" was one of four ways in,
+           promoted to the headline, which quietly told a visitor that talking to your phone is
+           what Tally IS. It is not. Speed is what Tally is. The ways in are the proof, and they
+           belong in the lead where they can be listed, not in the headline where one of them
+           gets to stand for all of them. -->
       <span class="pill">Easy. Fast. FUN.</span>
-      <h1>Say what you ate.<br><span class="grad">Tally does the rest.</span></h1>
+      <h1>The fastest, least fussy way<br>to <span class="grad">track what you eat.</span></h1>
       <p class="lead">
-        Snap a photo, say what you had, or catch up your <em>whole day</em> in one sentence.
-        Tally sorts it into meals, does the math, and tells you exactly what is left to hit
-        your goal today. No tedious searching. No fake precision.
+        Snap a photo. Say what you had. Catch up a whole day in one sentence. Take a picture of
+        a recipe and get its numbers. However you got fed, Tally logs it in seconds and tells you
+        exactly what is left to hit your goal today.
       </p>
       <div class="hero-actions">
         <button class="btn lg" onclick="openSignup()"><span>Start your free trial</span></button>
@@ -442,6 +492,70 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── THE SPEED BAND: the thesis, stated once, up front ──
+         Everything below this section is a demonstration of it. -->
+    <section class="block speed" id="speed">
+      <div class="wrap">
+        <div class="speed-head">
+          <h2>Tally respects your time</h2>
+          <p>
+            Speed is not a feature of this app. Speed is the point of it. Every screen is built
+            around one question: how do we get you back to your life sooner?
+          </p>
+        </div>
+        <div class="speed-grid">
+          <div class="speed-item">
+            <div class="speed-n">One sentence</div>
+            <p>An entire day of food, logged in the time it takes to say it out loud.</p>
+          </div>
+          <div class="speed-item">
+            <div class="speed-n">One tap</div>
+            <p>The coffee and the protein bar you have every morning. Already there, forever.</p>
+          </div>
+          <div class="speed-item">
+            <div class="speed-n">One photo</div>
+            <p>A label, a package, a whole plate. Point the camera and it is handled.</p>
+          </div>
+        </div>
+        <!-- THE TRADE WE DO NOT MAKE. "Fastest" invites exactly one objection, and it is a fair
+             one: fast usually means sloppy. So answer it in the same breath, and answer it with
+             the MECHANISM, not with a promise. When a real number exists we go and get it. When
+             one does not, we say so and hand you an honest estimate rather than inventing a
+             precise-looking lie. That is the whole accuracy story, and it is checkable. -->
+        <div class="speed-accuracy">
+          <h3>And we do not buy that speed with your accuracy.</h3>
+          <p>
+            When a real number exists, Tally goes and gets it. It reads the nutrition label off
+            the package. It pulls the numbers straight from the restaurant that cooked your food.
+            When no real number exists, because nobody knows exactly what the kitchen put in that
+            sauce, Tally gives you an honest estimate and tells you that is what it is. It will
+            never dress up a guess as a fact, and you can change any number it gives you in
+            seconds.
+          </p>
+        </div>
+
+        <!-- THE CHALLENGE. A boast a visitor cannot check is worth nothing, so we hand them the
+             stopwatch and put our support address next to it. It also happens to be the cheapest
+             product research we will ever run: anyone who takes us up on it is telling us exactly
+             where Tally is still too slow, which is the only thing we actually need to know.
+
+             MEASURE TIME, AND ONLY TIME. This once said "count the taps" and then tried to
+             explain why seconds beat taps. Both were wrong. Tap count is our internal design
+             argument, not the customer's problem, and putting it on the page just asks them to
+             hold two ideas when they only need one: Tally is fast, time it yourself. Never make
+             a visitor referee an argument they did not come here to have. -->
+        <div class="speed-foot">
+          Time it. Then time it in the app you use now. <b>That is the whole pitch.</b>
+          <div class="speed-challenge">
+            And if anything out there logs your food in less time than Tally does, we genuinely
+            want to know. Tell us what you were logging and how long it took, and we will make
+            Tally faster at it.
+            <a href="mailto:support@tallyapplications.com?subject=I%20found%20something%20faster">support@tallyapplications.com</a>
           </div>
         </div>
       </div>
@@ -515,16 +629,34 @@
         <div class="spot-copy">
           <span class="pill">The Tally Cookbook</span>
           <h2>Take a picture of a recipe.<br><span class="grad">Get the numbers.</span></h2>
+          <!-- THE STRONGEST THING WE HAVE, AND IT WAS BURIED. Home cooking is where every other
+               tracker quietly gives up: it makes YOU be the database. Type fourteen ingredients,
+               weigh each one, divide by servings, then do it all again the week you make it with
+               turkey instead of beef. Nobody sustains that. So people either guess wildly at the
+               food they eat MOST, or they stop logging altogether.
+
+               Name that chore precisely, because the reader has lived it, and the contrast does
+               all the selling for us. Do not oversell past it. -->
           <p class="lead">
-            The food you cook at home is the food nobody can track. Point Tally at a page in a
-            cookbook, or paste a link, and the calories and macros just show up. Every
-            ingredient split out, priced per serving.
+            Home cooking is where every other tracker gives up and hands you the work. Type in
+            fourteen ingredients. Weigh each one. Divide by the servings. Do it again next week
+            when you use turkey instead of beef. Nobody keeps that up, so the food people eat
+            most is the food they never log honestly.
+          </p>
+          <p class="lead">
+            Tally reads the page. Every ingredient priced, every serving counted, done before
+            the oven is preheated.
           </p>
           <ul class="spot-list">
             <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Made <b>15 servings instead of 18?</b> Change it in a second and every number follows.</span></li>
             <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Swapped ground beef for turkey? <b>Two taps</b> and it is done.</span></li>
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Cook it again next week and <b>log it in one tap</b>. You never build it twice.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Cook it again next year and <b>log it in one tap</b>. You never build it twice.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>From a cookbook, a screenshot, or a link. <b>However you found it, Tally reads it.</b></span></li>
           </ul>
+          <p class="spot-kicker">
+            If you cook, this is the reason to switch. We have not found anything that comes
+            close, and we would love to be proven wrong.
+          </p>
         </div>
         <div class="shot">
           <div class="phone">
@@ -600,10 +732,11 @@
           <p>Your whole day on one screen, meal by meal, with what is <em>left</em> to hit your goal right at the top. See where the calories went, then steer dinner instead of just recording it.</p>
         </div>
         <div class="card feature">
-          <!-- Your week: the Week tab's bar glyph -->
-          <div class="ico"><svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="4" y2="13"/><line x1="10" y1="20" x2="10" y2="7"/><line x1="16" y1="20" x2="16" y2="11"/><line x1="21" y1="20" x2="21" y2="4"/></svg></div>
-          <h3>Your whole week</h3>
-          <p>One big day does not undo a good week. Tally shows the week as a whole, so a Saturday out is just a Saturday, not a reason to quit on Monday.</p>
+          <!-- The Tally Cookbook: the open-book glyph, from the launcher AND the bottom nav.
+               It has its own tab in the app. It belongs in the list of what you get. -->
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <h3>The Tally Cookbook</h3>
+          <p>Photograph a page from a cookbook, or paste a link. Every ingredient is priced, every serving is counted, and the food you cook at home finally has real numbers. Cook it again next year and it is one tap.</p>
         </div>
         <div class="card feature">
           <!-- Add Manually: the launcher's pencil glyph. Every number in Tally is editable, and
