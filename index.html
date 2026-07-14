@@ -198,9 +198,10 @@
     .speed-accuracy p { font-size: 1rem; color: var(--t2); }
     .speed-foot { text-align: center; font-size: 1.02rem; color: var(--t2); margin-top: 38px; }
     .speed-foot b { color: var(--t1); font-weight: 700; }
+    /* The challenge stands alone now (the "time it yourself" line above it was cut), so it no
+       longer needs a rule separating it from anything. */
     .speed-challenge {
-      max-width: 620px; margin: 20px auto 0; padding-top: 18px;
-      border-top: 1px solid var(--border);
+      max-width: 620px; margin: 0 auto;
       font-size: 0.95rem; color: var(--t2);
     }
     .speed-challenge a { color: var(--purple); font-weight: 700; text-decoration: none; white-space: nowrap; }
@@ -432,11 +433,11 @@
            belong in the lead where they can be listed, not in the headline where one of them
            gets to stand for all of them. -->
       <span class="pill">Easy. Fast. Simple.</span>
-      <h1>The fastest, least fussy way<br>to <span class="grad">track what you eat.</span></h1>
+      <h1>The fastest, easiest way<br>to <span class="grad">track what you eat.</span></h1>
       <p class="lead">
-        Simply snap a photo ir say what you ate. You can even catch up a whole day in one sentence. Take a picture of
-        a recipe and get its numbers. However you eat, Tally logs it in seconds, telling you
-        exactly what is left to hit your goal today.
+        Snap a photo or say what you ate. You can even catch up a whole day in one sentence.
+        Take a picture of a recipe and get its numbers. However you eat, Tally logs it in
+        seconds and shows you what is left to hit your goal today.
       </p>
       <div class="hero-actions">
         <button class="btn lg" onclick="openSignup()"><span>Start your free trial</span></button>
@@ -504,14 +505,14 @@
         <div class="speed-head">
           <h2>Tally respects your time</h2>
           <p>
-            Speed is not a feature of this app. Speed is the point of it. Every screen is built
-            around one question: how do we get you back to your life sooner?
+            Speed is not just a feature of this app. Speed is the point of it. We build every
+            screen around one question. How do we get you back to your life sooner?
           </p>
         </div>
         <div class="speed-grid">
           <div class="speed-item">
             <div class="speed-n">One sentence</div>
-            <p>An entire day of food, logged in the time it takes to say it out loud.</p>
+            <p>A whole day of food, logged in the time it takes to say it out loud.</p>
           </div>
           <div class="speed-item">
             <div class="speed-n">One tap</div>
@@ -519,7 +520,7 @@
           </div>
           <div class="speed-item">
             <div class="speed-n">One photo</div>
-            <p>A label, a package, a whole plate. Point the camera and it is handled.</p>
+            <p>A label, a package, or a whole plate. Point the camera. Tally does the rest.</p>
           </div>
         </div>
         <!-- THE TRADE WE DO NOT MAKE. "Fastest" invites exactly one objection, and it is a fair
@@ -528,30 +529,26 @@
              one does not, we say so and hand you an honest estimate rather than inventing a
              precise-looking lie. That is the whole accuracy story, and it is checkable. -->
         <div class="speed-accuracy">
-          <h3>And we do not buy that speed with your accuracy.</h3>
+          <h3>Real numbers when they exist. Honest ones when they don't.</h3>
           <p>
-            When a real number exists, Tally goes and gets it. It reads the nutrition label off
-            the package. It pulls the numbers straight from the restaurant that cooked your food.
-            But it's never that easy, is it? What if the local restaurant doesn't share their     nutrition? What if you're eating at a friends house and they don't log their food? We've all been there. Tally has you covered. Take a picture of your plate with Tally Snap, or tell Smart Tally what you ate. Either way, you get a solid read of your calories and macros in environments where tracking is most difficult. This is great for local spots, eating out with friends, or busy days at work. 
+            When there is a real number, Tally goes and gets it. It reads the label on the
+            package. It pulls the numbers straight from the restaurant that cooked your food.
+            But it's never that easy, is it? What if the local spot doesn't share their numbers?
+            What if you're eating at a friend's house? We've all been there, and Tally has you
+            covered. Take a picture of your plate with Tally Snap, or tell Smart Tally what you
+            ate. Either way you get a solid read on your calories and macros, right where
+            tracking is hardest. Great for local spots, meals with friends, and busy days at work.
           </p>
         </div>
 
         <!-- THE CHALLENGE. A boast a visitor cannot check is worth nothing, so we hand them the
              stopwatch and put our support address next to it. It also happens to be the cheapest
              product research we will ever run: anyone who takes us up on it is telling us exactly
-             where Tally is still too slow, which is the only thing we actually need to know.
-
-             MEASURE TIME, AND ONLY TIME. This once said "count the taps" and then tried to
-             explain why seconds beat taps. Both were wrong. Tap count is our internal design
-             argument, not the customer's problem, and putting it on the page just asks them to
-             hold two ideas when they only need one: Tally is fast, time it yourself. Never make
-             a visitor referee an argument they did not come here to have. -->
+             where Tally is still too slow, which is the only thing we actually need to know. -->
         <div class="speed-foot">
-          Time it. Then time it in the app you use now. <b>That is the whole pitch.</b>
           <div class="speed-challenge">
-            And if anything out there logs your food in less time than Tally does, we genuinely
-            want to know. Tell us what you were logging and how long it took, and we will make
-            Tally faster at it.
+            Think another app is faster? We want to know. Tell us what you were logging and how
+            long it took, and we will make Tally faster at it.
             <a href="mailto:support@tallyapplications.com?subject=I%20found%20something%20faster">support@tallyapplications.com</a>
           </div>
         </div>
@@ -568,14 +565,14 @@
           <span class="pill">Log your whole day</span>
           <h2>Forgot to log?<br><span class="grad">Say the whole day at once.</span></h2>
           <p class="lead">
-            It is 9pm and you have logged nothing. Every other tracker makes you enter four
-            meals, one at a time. Tally lets you say it all in one breath, and sorts it into
-            breakfast, lunch, dinner and snacks for you.
+            It's 9pm and you have not logged a thing. Other trackers make you enter four meals,
+            one at a time. Tally lets you say it all at once, and sorts it into breakfast, lunch,
+            dinner and snacks for you.
           </p>
           <ul class="spot-list">
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Talk or type. <b>One sentence, the entire day.</b></span></li>
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Every meal split out, every item priced, all of it <b>editable in a tap</b>.</span></li>
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Ate out? Tally pulls the <b>real numbers straight from the restaurant</b>.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Talk or type. <b>One sentence, the whole day.</b></span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Every meal is split out. Every item gets its own numbers. <b>Change any of it in a tap.</b></span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Ate out? Tally gets the <b>real numbers from the restaurant</b>.</span></li>
           </ul>
         </div>
         <div class="shot">
@@ -635,23 +632,24 @@
                Name that chore precisely, because the reader has lived it, and the contrast does
                all the selling for us. Do not oversell past it. -->
           <p class="lead">
-            Home cooking is where every other calorie tracker gives up and hands you the work. Type in
-            fourteen ingredients. Weigh each one. Divide by the servings. Do it again next week
-            when you use turkey instead of beef. Nobody keeps that up, so the food people actually eat most is the food they never log honestly.
+            Home cooking is where every other calorie tracker gives up and hands you the work.
+            Type in fourteen ingredients. Weigh each one. Divide by the servings. Do it all again
+            next week when you use turkey instead of beef. Nobody keeps that up. So the food
+            people eat most is the food they never log honestly.
           </p>
           <p class="lead">
-            Tally reads the page or the recipe URL. Every ingredient priced, every serving counted, done before
-            the oven is preheated.
+            Tally reads the page, or the link. Every ingredient gets its numbers. Every serving is
+            counted. You are done before the oven is hot.
           </p>
           <ul class="spot-list">
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Made <b>15 servings instead of 18?</b> Change it in a second and every number follows.</span></li>
-            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Swapped ground beef for turkey? <b>Two taps</b> and it is done.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Made <b>15 servings instead of 18?</b> Change it in a second. Every number updates.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Swapped ground beef for turkey? <b>Two taps</b> and it's done.</span></li>
             <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Cook it again next year and <b>log it in one tap</b>. You never build it twice.</span></li>
             <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>From a cookbook, a screenshot, or a link. <b>However you found it, Tally reads it.</b></span></li>
           </ul>
           <p class="spot-kicker">
-            If you cook, this is the reason to switch. We have not found anything that comes
-            close, and we would love to be proven wrong.
+            If you cook, this is the reason to switch. We have not found anything close, and we
+            would love to be proven wrong.
           </p>
         </div>
         <div class="shot">
@@ -697,7 +695,7 @@
     <section class="block wrap" id="features">
       <div class="section-head">
         <h2>Everything you get with Tally</h2>
-        <p>Every tool is one tap from the same button. Use the ones that fit your day and ignore the rest.</p>
+        <p>Every tool is one tap away. Use the ones that fit your day. Ignore the rest.</p>
       </div>
       <!-- THE GLYPHS ARE THE APP'S OWN. Lifted verbatim from the launcher tray and the bottom
            nav in index.html, so the icon a visitor learns here is the icon they tap on their
@@ -707,39 +705,39 @@
           <!-- Tally Snap: the launcher's camera glyph -->
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 8.5a2 2 0 0 1 2-2h2L9.3 4.7h5.4L16 6.5h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8z"/><circle cx="12" cy="12.3" r="3.2"/></svg></div>
           <h3>Tally Snap</h3>
-          <p>One photo does it all. It reads a nutrition label and gets it right. No label? It finds the numbers for you. Point it at a whole plate and it makes an honest guess you can fix in a few taps.</p>
+          <p>One photo does it all. It reads a nutrition label and gets it right. No label? Tally Snap finds the numbers for you. Point it at a whole plate and it makes a good guess. Think the guess is off? Fix it in a few taps.</p>
         </div>
         <div class="card feature">
           <!-- Smart Tally: the launcher's lightbulb glyph -->
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="21.5" x2="14" y2="21.5"/></svg></div>
           <h3>Smart Tally</h3>
-          <p>Say what you ate in plain words. "A turkey sandwich and a handful of chips." Tally breaks it into items you can edit, each with an honest estimate.</p>
+          <p>Say what you ate in plain words. "A turkey sandwich and a handful of chips." Tally splits it into items you can change, each with an honest estimate.</p>
         </div>
         <div class="card feature">
           <!-- Re-Tally: the launcher's lightning-bolt glyph -->
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M13 2 5 13h5l-1 9 9-12h-5l1-8z"/></svg></div>
           <h3>Re-Tally</h3>
-          <p>The fastest way to Tally. The protein bar and the smoothie you have every single day are one tap away, forever. You never search for the same thing twice.</p>
+          <p>The fastest way to Tally. The protein bar and the smoothie you have every day are one tap away, for good. You never search for the same thing twice.</p>
         </div>
         <div class="card feature">
           <!-- Tally Ledger: the Today tab's clock glyph, because that is where the ledger lives -->
           <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="15" y2="14"/></svg></div>
           <h3>The Tally Ledger</h3>
-          <p>Your whole day on one screen, meal by meal, with what is <em>left</em> to hit your goal right at the top. See where the calories went, then steer dinner instead of just recording it.</p>
+          <p>Your whole day on one screen, meal by meal. What is <em>left</em> to hit your goal sits right at the top. See where your calories went, then plan dinner around it.</p>
         </div>
         <div class="card feature">
           <!-- The Tally Cookbook: the open-book glyph, from the launcher AND the bottom nav.
                It has its own tab in the app. It belongs in the list of what you get. -->
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
           <h3>The Tally Cookbook</h3>
-          <p>Photograph a page from a cookbook, or paste a link. Every ingredient is priced, every serving is counted, and the food you cook at home finally has real numbers. Cook it again next year and it is one tap.</p>
+          <p>Take a picture of a page in a cookbook, or paste a link. Every ingredient gets its numbers. Every serving is counted. The food you cook at home finally has real numbers, and cooking it again is one tap.</p>
         </div>
         <div class="card feature">
           <!-- Add Manually: the launcher's pencil glyph. Every number in Tally is editable, and
                this is the card that says so. -->
           <div class="ico"><svg viewBox="0 0 24 24"><path d="M5 19l1.2-4.2L16 5a2 2 0 0 1 3 3l-9.8 9.8L5 19z"/><line x1="14" y1="7" x2="17" y2="10"/></svg></div>
           <h3>Track only what you care about</h3>
-          <p>Just calories and protein? Great. Want fiber too? Sure. Only calories? That works too. And every number Tally gives you can be changed in seconds if you want to.</p>
+          <p>Just calories and protein? Great. Want fiber too? Sure. Only calories? That works too. And you can change any number Tally gives you in seconds.</p>
         </div>
       </div>
     </section>
@@ -749,23 +747,23 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Logging a meal takes seconds</h2>
-          <p>A meal, a recipe, or the whole day. One honest answer out.</p>
+          <p>A meal, a recipe, or a whole day. One honest answer.</p>
         </div>
         <div class="steps">
           <div class="step">
             <div class="num">1</div>
-            <h3>Snap, say, or dump the day</h3>
-            <p>Take a photo, tell Tally what you ate in plain words, or catch up the entire day in one sentence.</p>
+            <h3>Snap it or say it</h3>
+            <p>Take a photo. Tell Tally what you ate in plain words. Or catch up the whole day in one sentence.</p>
           </div>
           <div class="step">
             <div class="num">2</div>
             <h3>Tally does the math</h3>
-            <p>It works out what you ate, pulls the real numbers from the restaurant or the label when it can, and honestly estimates the rest.</p>
+            <p>It works out what you ate. It gets the real numbers from the label or the restaurant when it can, and makes an honest estimate for the rest.</p>
           </div>
           <div class="step">
             <div class="num">3</div>
             <h3>Tap to log</h3>
-            <p>Confirm in one tap. Change anything you like. Watch your "left today" update instantly.</p>
+            <p>Confirm in one tap. Change anything you want. Your "left today" updates right away.</p>
           </div>
         </div>
       </div>
@@ -774,7 +772,7 @@
     <!-- CTA -->
     <div class="cta-banner wrap">
       <h2>Easy. Fast. FUN.</h2>
-      <p>This is what tracking your food should have felt like the whole time.</p>
+      <p>This is what tracking your food should have felt like all along.</p>
       <button class="btn-inv" onclick="openSignup()">Start your free trial</button>
     </div>
 
@@ -794,14 +792,13 @@
         <span class="pill">Have a discount code?</span>
         <h2>Redeem it here, on the web.</h2>
         <p>
-          If a creator or a friend gave you a discount, start your trial on this page and enter
-          the code at checkout. It takes one extra tap and the discount is yours for as long as
-          it lasts.
+          Did a creator or a friend give you a discount? Start your trial right here and type the
+          code in at checkout. It takes one extra tap, and the discount is yours.
         </p>
         <button class="btn lg" onclick="openSignup()"><span>Start free trial and use my code</span></button>
         <div class="promo-fine">
-          Discount codes cannot be redeemed in the App Store or on Google Play. Those stores take
-          payment their own way and have nowhere to enter a code. Start here and it is applied
+          You cannot use a discount code in the App Store or on Google Play. Those stores take
+          payment their own way, and there is nowhere to type a code. Start here and we apply it
           before you pay.
         </div>
       </div>
@@ -814,7 +811,7 @@
          app, and refStoreNote() adds a line steering a referred visitor back to checkout. -->
     <section class="block wrap" style="text-align:center;padding-top:44px;">
       <div style="font-weight:700;font-size:1.02rem;margin-bottom:4px;">Tally lives on your phone.</div>
-      <div id="store-note" style="color:var(--t2);font-size:0.92rem;margin-bottom:16px;">Start your trial here, then download the app and sign in with the same email.</div>
+      <div id="store-note" style="color:var(--t2);font-size:0.92rem;margin-bottom:16px;">Start your trial here. Then download the app and sign in with the same email.</div>
       <div class="store-badges" id="home-badges"></div>
     </section>
   </main>
