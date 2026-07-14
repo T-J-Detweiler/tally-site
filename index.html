@@ -183,31 +183,51 @@
        This is not elegance, it is a layout that cannot fail on the phone the customer owns.
        (Masks — the "boarding pass" — would have been a bigger gamble on the same phone, not a
        smaller one: mask-composite is exactly what old WebViews get wrong.) */
+    /* The popup that carries the ticket. */
+    #ticket-overlay {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      align-items: flex-start; justify-content: center;
+      background: rgba(20, 0, 40, 0.6);
+      -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+      padding: 22px; padding-top: calc(22px + env(safe-area-inset-top)); padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    }
+    #ticket-overlay.open { display: flex; }
+    #ticket-sheet {
+      margin: auto; background: #fff; border-radius: 22px; max-width: 380px; width: 100%;
+      padding: 28px 24px 24px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+    }
+    .ticket-pop-head { font-weight: 800; font-size: 1.24rem; letter-spacing: -0.01em; color: #1a1a1a; margin-bottom: 16px; }
+    .ticket-pop-body { font-size: 0.94rem; color: #555; line-height: 1.6; margin: 16px 0 20px; }
+    .ticket-pop-body b { color: #1a1a1a; }
+    .ticket-pop-fine { font-size: 0.8rem; color: #aaa; margin-top: 12px; line-height: 1.5; }
+
+    /* THE TICKET IS A DOCUMENT, NOT A CONTROL. It used to wear the gradient ring, a purple glow
+       and a tinted stub, which made it the loudest, most tappable-looking thing on the screen —
+       so a cold user pressed its stub instead of the badge. It is a receipt now: quiet border,
+       muted ink, nothing that invites a finger. In the popup it is the ONLY object, and the one
+       button below it is unmistakable. */
     .ticket {
-      display: table; width: 100%; margin: 0 auto 18px; text-align: left;
+      display: table; width: 100%; margin: 0 auto; text-align: left;
       border-collapse: collapse; overflow: hidden;
-      background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #7B00FF, #FF006E) border-box;
-      border: 2px solid transparent; border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(123, 0, 255, 0.13);
+      background: #fbfafc; border: 1.5px solid #e6e1ee; border-radius: 12px;
     }
     .ticket-main {
       display: table-cell; vertical-align: middle; padding: 15px 15px 14px;
       /* The long code must ellipsis rather than force the cell wider than the phone. */
       max-width: 0;
     }
-    /* The stub: the torn-off half, split by the perforation. The tick lands HERE, because a
-       ticket with a tick on its stub is a ticket that has been validated. */
+    /* The stub. It carries ONLY the green tick, and only once the ticket has been copied. It
+       used to hold the word "Ready" on a tinted panel — which is a button, and got pressed. */
     .ticket-stub {
-      display: table-cell; vertical-align: middle; width: 84px; text-align: center;
+      display: table-cell; vertical-align: middle; width: 66px; text-align: center;
       padding: 12px 7px; white-space: nowrap;
-      border-left: 2px dashed rgba(123,0,255,0.35);
-      background: linear-gradient(135deg, rgba(123,0,255,0.07), rgba(255,0,110,0.07));
+      border-left: 2px dashed #d9d2e4; background: #f5f2f9;
     }
     .ticket-stub-in {
-      font-size: 0.64rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
-      color: #b0aab8; line-height: 1.35;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      color: #12b76a; line-height: 1.35;
     }
-    .ticket-stub-in.copied { color: #12b76a; }
     .ticket-stub-in svg { display: block; margin: 0 auto 4px; }
     .ticket-head { margin-bottom: 7px; }
     .ticket-label {
@@ -484,24 +504,50 @@
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
         <div id="su-sub-headline" style="color:#666;font-size:0.95rem;margin-bottom:20px;">Your free trial has started.</div>
-        <!-- THE TALLY TICKET. Nothing feels invasive if you said it was coming and showed it
-             happen. So we name the thing, show it, promise exactly one action, and then tick
-             it green in front of them when they tap Download. By the time they are in the app
-             asking them to paste, it is the thing they were already expecting. -->
-        <div id="su-ticket" class="ticket">
-          <div class="ticket-main">
-            <div class="ticket-head"><span class="ticket-label">Your Tally ticket</span></div>
-            <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
-            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy it when you tap below. <b>Redeem it in the app after you download.</b></div>
-          </div>
-          <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in">Ready</div></div>
-        </div>
+        <!-- ONE THING TO TAP. The ticket used to live here, and a cold user (the owner's wife,
+             testing without context) tapped its "Ready" stub, because a tinted panel with a bold
+             uppercase label IS a button in every visual convention we use. The ticket was also
+             the loudest thing on screen, louder than the badge she was actually meant to press.
+             So the ticket is GONE from this screen. It now appears in a popup ON the badge tap
+             (see ticketOverlay), where it is the only subject and there is nothing to misclick.
+             She reads it while still on our page, then goes to the store. First understand, then
+             travel. -->
         <div id="su-sub-cta" style="font-weight:700;font-size:1rem;color:#1a1a1a;margin-bottom:12px;">Download Tally and start tallying.</div>
         <div id="su-sub-badges" class="store-badges"></div>
         <div id="su-sub-note" style="color:#999;font-size:0.85rem;margin-top:16px;"></div>
       </div>
 
       <div id="su-err" style="color:#d6336c;font-size:0.85rem;margin-top:14px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <!-- THE TICKET POPUP. Opens when they tap the store badge, BEFORE they leave for the store.
+       That separation is the whole point: explaining the ticket and getting them to the store
+       used to happen in the same instant, so the explanation lost. Here they read it on our
+       page, at their own pace, with exactly ONE thing to tap. Then they travel.
+       The ticket is already stamped Copied when this opens, because the badge tap was the user
+       gesture the clipboard API requires. -->
+  <div id="ticket-overlay">
+    <div id="ticket-sheet">
+      <div class="ticket-pop-head">We&rsquo;ve made you a Tally ticket</div>
+      <div class="ticket">
+        <div class="ticket-main">
+          <div class="ticket-head"><span class="ticket-label">Your Tally ticket</span></div>
+          <div id="ticket-code" class="ticket-code">&nbsp;</div>
+        </div>
+        <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in copied"></div></div>
+      </div>
+      <!-- NEVER "unlock your account". The ticket is a SHORTCUT, not a key: without it they can
+           still sign in with their email. Telling someone a ticket unlocks the thing they just
+           paid for, and then having their clipboard get overwritten, is a frightened customer
+           and a support email. And it has nothing to do with their discount, which is already
+           applied to their subscription and is theirs forever. -->
+      <div class="ticket-pop-body">
+        It&rsquo;s on your clipboard. After you install Tally, tap <b>&ldquo;Already have a ticket?&rdquo;</b> and paste it in.
+        You&rsquo;ll go straight in, with <b>no sign-in email and no code.</b>
+      </div>
+      <button id="ticket-go" class="btn block"><span>Take me to the App Store &rarr;</span></button>
+      <div class="ticket-pop-fine">Lost it? No problem, you can always sign in with your email.</div>
     </div>
   </div>
 
@@ -772,19 +818,8 @@
         else hideTicket();
       } catch (_) { hideTicket(); }
     }
-    // No ticket, no promise. If we couldn't mint one, the card vanishes rather than advertising
-    // a paste that will never work; they get the ordinary email login and never know.
-    function hideTicket() { var t = document.getElementById('su-ticket'); if (t) t.style.display = 'none'; }
-    function showTicket(code) {
-      var t = document.getElementById('su-ticket'), c = document.getElementById('ticket-code');
-      if (!t || !c) return;
-      // CLEAR the inline display, do NOT set 'block'. Setting it clobbers the stylesheet's
-      // layout (it killed `display:flex` on the first torn-stub build, which is why the stub
-      // stacked BELOW the content and looked broken — that was this line, not the phone).
-      // Empty string means "whatever the stylesheet says", which is the table.
-      t.style.display = '';
-      c.textContent = code;                  // the real thing, in full. Nothing hidden.
-    }
+    function hideTicket() { /* nothing on the handover screen to hide any more */ }
+    function showTicket() { /* the ticket only ever appears inside the popup, on the tap */ }
     var TICK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12b76a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
     // ANDROID OPENED PLAY IN THE BROWSER. Android only hands a play.google.com link to the Play
     // Store APP when it believes a human clicked it. We hold navigation 550ms so the green tick
@@ -801,24 +836,28 @@
       var isAndroid = /Android/.test(navigator.userAgent || '');
       return (isAndroid && dest === STORE_ANDROID) ? PLAY_INTENT : dest;
     }
+    // The badge tap does TWO things and then stops. It copies the ticket (this tap is the user
+    // gesture the clipboard API demands — nothing may be awaited before the write, or Safari
+    // silently refuses it), and it opens the popup. It does NOT navigate. Travelling is the
+    // popup button's job, so the customer gets to read before they go.
     function storeHandoff(ev, dest) {
-      // No ticket ready? Let the link do what links do. They get the email login.
+      // No ticket? Then there is nothing to explain. Let the badge behave like a plain link and
+      // they get the ordinary email login, none the wiser.
       if (!_handoffCode || !navigator.clipboard) return true;
       try {
         ev.preventDefault();
-        // SYNCHRONOUS inside the gesture. Nothing may be awaited before this line, or Safari
-        // treats the tap as over and silently refuses the write.
-        var p = navigator.clipboard.writeText(_handoffCode);
-        // Tick it green IN FRONT OF THEM, then pause long enough to be seen before the App
-        // Store takes the screen. This half-second is the entire point: they watched it happen,
-        // so being asked to paste in the app is expected instead of strange.
+        navigator.clipboard.writeText(_handoffCode);   // synchronous inside the gesture
+        var c = document.getElementById('ticket-code');
         var st = document.getElementById('ticket-state');
-        var hint = document.getElementById('ticket-hint');
-        if (st) { st.className = 'ticket-stub-in copied'; st.innerHTML = TICK + 'Copied'; }
-        if (hint) hint.innerHTML = 'Copied. <b>Download Tally, then redeem it in the app.</b>';
+        if (c) c.textContent = _handoffCode;           // the real thing, in full. Nothing hidden.
+        if (st) st.innerHTML = TICK + 'Copied';        // already stamped by the time they see it
         var target = storeDest(dest);
-        var go = function () { setTimeout(function () { location.href = target; }, 550); };
-        if (p && p.then) p.then(go, go); else go();
+        var store = (dest === STORE_ANDROID) ? 'Google Play' : 'the App Store';
+        var go = document.getElementById('ticket-go');
+        if (go) { btnLabel(go, 'Take me to ' + store + ' →'); go.onclick = function () { location.href = target; }; }
+        var ov = document.getElementById('ticket-overlay');
+        if (ov) ov.classList.add('open');
+        document.body.classList.add('su-locked');
       } catch (_) { location.href = dest; }
       return false;
     }
@@ -860,15 +899,17 @@
           + '. Your card is on file and nothing is charged'
           + (end ? ' until ' + end : ' until your trial ends') + '.';
         var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">Open Tally on the web</a>.';
-        var signedIn = 'To redeem your ticket: open Tally, tap <b>&ldquo;Already have a ticket?&rdquo;</b>, then tap the box and hit <b>Paste</b>. No second sign-in email.';
+        // The badge is the ONLY thing to press. Everything about the ticket is explained in the
+        // popup that tap opens, where it is the sole subject. Saying any of it here would just
+        // put words in front of the one action.
         if (ios) {
           cta.textContent = 'Download Tally and start tallying.';
           badges.innerHTML = appleBadge(true);
-          note.innerHTML = '<div style="color:#666;margin-bottom:8px;">' + signedIn + '</div>' + web;
+          note.innerHTML = web;
         } else if (android) {
           cta.textContent = 'Download Tally and start tallying.';
           badges.innerHTML = googleBadge(true);
-          note.innerHTML = '<div style="color:#666;margin-bottom:8px;">' + signedIn + '</div>' + web;
+          note.innerHTML = web;
         } else {
           // Desktop. They can start on the web right now, but Tally is a phone app, so both
           // badges are the real invitation and the web link is the runner-up.
