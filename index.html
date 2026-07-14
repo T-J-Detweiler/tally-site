@@ -12,8 +12,8 @@
   <meta property="og:title" content="Tally — Honest calorie tracking, without the fuss">
   <meta property="og:description" content="Snap a photo or just say what you ate. Tally gives you an honest estimate in one tap — no obsessive logging, no guilt.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://tallyapplications.com">
-  <meta property="og:image" content="https://tallyapplications.com/icon-192.png">
+  <meta property="og:url" content="https://doyoutally.com">
+  <meta property="og:image" content="https://doyoutally.com/icon-192.png">
 
   <!-- FirstPromoter (Club Tally affiliate tracking): tags a visitor arriving via ?fpr=CODE with
        the _fprom_tid cookie (60d). Checkout forwards it to the worker → Stripe metadata, and
@@ -444,7 +444,7 @@
       </a>
       <div class="copy">
         © 2026 Tally Applications ·
-        <a href="/club">Club Tally</a> ·
+        <a href="https://clubtally.app">Club Tally</a> ·
         <a href="/terms.html">Terms</a> ·
         <a href="/privacy.html">Privacy</a> ·
         <a href="mailto:micah.tarter@tallyapplications.com">Contact</a>
@@ -1063,7 +1063,7 @@
       var promo = codeInBox || undefined;
       try { localStorage.setItem('_funnelPlan', _plan); localStorage.setItem('_funnelPromo', promo || ''); } catch (_) {}
       try {
-        var cs = await _stripe.confirmSetup({ elements: _elements, confirmParams: { return_url: 'https://tallyapplications.com/?subscribe_return=1' }, redirect: 'if_required' });
+        var cs = await _stripe.confirmSetup({ elements: _elements, confirmParams: { return_url: 'https://doyoutally.com/?subscribe_return=1' }, redirect: 'if_required' });
         if (cs.error) throw new Error(cs.error.message || 'Your card could not be saved.');
         if (!cs.setupIntent || cs.setupIntent.status !== 'succeeded') throw new Error('Card setup did not complete.');
         await suCreateSub(cs.setupIntent.payment_method, _plan, promo);
