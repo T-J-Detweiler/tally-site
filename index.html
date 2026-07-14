@@ -184,43 +184,44 @@
        (Masks — the "boarding pass" — would have been a bigger gamble on the same phone, not a
        smaller one: mask-composite is exactly what old WebViews get wrong.) */
     .ticket {
-      display: table; width: 100%; max-width: 340px; margin: 0 auto 18px; text-align: left;
+      display: table; width: 100%; margin: 0 auto 18px; text-align: left;
       border-collapse: collapse; overflow: hidden;
       background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #7B00FF, #FF006E) border-box;
-      border: 1.5px solid transparent; border-radius: 12px;
+      border: 2px solid transparent; border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(123, 0, 255, 0.13);
     }
     .ticket-main {
-      display: table-cell; vertical-align: middle; padding: 12px 13px 11px;
+      display: table-cell; vertical-align: middle; padding: 15px 15px 14px;
       /* The long code must ellipsis rather than force the cell wider than the phone. */
       max-width: 0;
     }
     /* The stub: the torn-off half, split by the perforation. The tick lands HERE, because a
        ticket with a tick on its stub is a ticket that has been validated. */
     .ticket-stub {
-      display: table-cell; vertical-align: middle; width: 74px; text-align: center;
-      padding: 10px 6px; white-space: nowrap;
+      display: table-cell; vertical-align: middle; width: 84px; text-align: center;
+      padding: 12px 7px; white-space: nowrap;
       border-left: 2px dashed rgba(123,0,255,0.35);
-      background: linear-gradient(135deg, rgba(123,0,255,0.06), rgba(255,0,110,0.06));
+      background: linear-gradient(135deg, rgba(123,0,255,0.07), rgba(255,0,110,0.07));
     }
     .ticket-stub-in {
-      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
-      color: #bbb; line-height: 1.35;
+      font-size: 0.64rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      color: #b0aab8; line-height: 1.35;
     }
     .ticket-stub-in.copied { color: #12b76a; }
-    .ticket-stub-in svg { display: block; margin: 0 auto 3px; }
-    .ticket-head { margin-bottom: 5px; }
+    .ticket-stub-in svg { display: block; margin: 0 auto 4px; }
+    .ticket-head { margin-bottom: 7px; }
     .ticket-label {
-      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
       background: linear-gradient(135deg, #7B00FF, #FF006E);
       -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
     .ticket-code {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.74rem; color: #888; letter-spacing: 0.01em;
+      font-size: 0.82rem; color: #7a7a7a; letter-spacing: 0.01em;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      background: #faf8fd; border-radius: 7px; padding: 7px 9px; margin-bottom: 8px;
+      background: #f7f3fd; border-radius: 8px; padding: 9px 10px; margin-bottom: 9px;
     }
-    .ticket-hint { font-size: 0.78rem; color: #666; line-height: 1.5; }
+    .ticket-hint { font-size: 0.82rem; color: #555; line-height: 1.5; }
     .ticket-hint b { color: #1a1a1a; }
     /* The tick. Grows once, then sits there. */
     @keyframes ticket-pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
@@ -491,7 +492,7 @@
           <div class="ticket-main">
             <div class="ticket-head"><span class="ticket-label">Your Tally ticket</span></div>
             <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
-            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this when you tap below.</div>
+            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy it when you tap below. <b>Redeem it in the app after you download.</b></div>
           </div>
           <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in">Ready</div></div>
         </div>
@@ -814,7 +815,7 @@
         var st = document.getElementById('ticket-state');
         var hint = document.getElementById('ticket-hint');
         if (st) { st.className = 'ticket-stub-in copied'; st.innerHTML = TICK + 'Copied'; }
-        if (hint) hint.textContent = 'Now install Tally and paste it in.';
+        if (hint) hint.innerHTML = 'Copied. <b>Download Tally, then redeem it in the app.</b>';
         var target = storeDest(dest);
         var go = function () { setTimeout(function () { location.href = target; }, 550); };
         if (p && p.then) p.then(go, go); else go();
@@ -859,7 +860,7 @@
           + '. Your card is on file and nothing is charged'
           + (end ? ' until ' + end : ' until your trial ends') + '.';
         var web = 'Prefer a computer? <a href="' + APP_URL + '" style="color:#7B00FF;font-weight:600;">Open Tally on the web</a>.';
-        var signedIn = 'In the app, tap <b>&ldquo;Already have a ticket?&rdquo;</b>, then tap the box, tap it <b>again</b>, and hit <b>Paste</b>. No second sign-in email.';
+        var signedIn = 'To redeem your ticket: open Tally, tap <b>&ldquo;Already have a ticket?&rdquo;</b>, then tap the box, tap it <b>again</b>, and hit <b>Paste</b>. No second sign-in email.';
         if (ios) {
           cta.textContent = 'Download Tally and start tallying.';
           badges.innerHTML = appleBadge(true);
