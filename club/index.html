@@ -75,7 +75,7 @@
     .tier li b { color: var(--t1); font-weight: 700; }
     /* The worked example. A creator can't price "15% for life" without the sticker price,
        and the rate pays on what the customer ACTUALLY pays, not on sticker. Both live here,
-       and the math is spelled out for EVERY rung at 1 / 5 / 10 people, so the climb is visible. */
+       and the math is spelled out for ALL THREE at 1 / 5 / 10 subscribers, so the climb is visible. */
     .tier-math {
       max-width: 760px; margin: 38px auto 0;
       background: var(--bg); border: 1px solid var(--border); border-radius: 18px; padding: 26px 28px;
@@ -101,6 +101,30 @@
     table.math tr.top .who b { background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     table.math tr.top td { color: var(--t1); }
     .math-foot { font-size: 0.92rem; color: var(--t2); line-height: 1.65; margin-top: 18px; text-align: center; }
+
+    /* ── The Platinum override. Its own panel, wearing the gradient ring, because the
+       5% is the thing that stops being a ladder and starts being leverage: it pays on
+       subscribers you never sent. ── */
+    .plat-math {
+      max-width: 760px; margin: 26px auto 0; padding: 28px;
+      border-radius: 18px;
+      background: linear-gradient(var(--bg), var(--bg)) padding-box, var(--g) border-box;
+      border: 1.7px solid transparent;
+      box-shadow: 0 18px 44px var(--glow);
+    }
+    .plat-math .eyebrow {
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      text-align: center; margin-bottom: 8px;
+      background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .plat-math h3 { font-size: 1.28rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; text-align: center; }
+    .plat-math p { font-size: 0.97rem; color: var(--t2); line-height: 1.65; text-align: center; }
+    .plat-math b { color: var(--t1); font-weight: 700; }
+    .plat-math table.math td { white-space: nowrap; }
+    .plat-math .punch {
+      margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);
+      font-size: 1rem; color: var(--t1); line-height: 1.6; font-weight: 600;
+    }
 
     .tier-note { text-align: center; color: var(--t3); font-size: 0.9rem; margin-top: 26px; }
 
@@ -206,12 +230,12 @@
     <section class="block tiers-wrap" id="tiers">
       <div class="wrap">
         <div class="section-head">
-          <h2>Three rungs. You climb them.</h2>
-          <p>Everyone starts at the same place. You move up as your people stick around, and we tell you when you have.</p>
+          <h2>Silver, Gold, Platinum.</h2>
+          <p>Everyone starts at Silver. You move up as your people stick around, and we tell you when you have.</p>
         </div>
         <div class="tiers">
           <div class="tier">
-            <div class="tier-name">Rung one</div>
+            <div class="tier-name">Where everyone starts</div>
             <h3>Silver</h3>
             <div class="rate">15%<small> for life</small></div>
             <div class="rate-sub">on every subscription you send, for as long as they stay</div>
@@ -222,24 +246,24 @@
             </ul>
           </div>
           <div class="tier">
-            <div class="tier-name">Rung two</div>
+            <div class="tier-name">Once they stick</div>
             <h3>Gold</h3>
             <div class="rate">20%<small> for life</small></div>
             <div class="rate-sub">applied to new and existing referrals</div>
             <ul>
               <li>Everything in Silver</li>
-              <li><b>A higher rate on people you already sent</b>, not just the next ones</li>
+              <li><b>A higher rate on subscribers you already sent</b>, not just the next ones</li>
               <li>Early access to what we're building next</li>
             </ul>
           </div>
           <div class="tier top">
-            <div class="tier-name">Top rung</div>
+            <div class="tier-name">The top</div>
             <h3>Platinum</h3>
             <div class="rate">25%<small> for life</small></div>
-            <div class="rate-sub">plus 5% of what the creators you bring in earn</div>
+            <div class="rate-sub">plus 5% of every subscription the creators you bring in send</div>
             <ul>
               <li>Everything in Gold</li>
-              <li><b>Bring other creators into the club</b> and earn 5% of their gross, on top of your own</li>
+              <li><b>Bring other creators into the club</b> and earn 5% of every subscription they send, on top of everything you earn yourself</li>
               <li>A hand in where Tally goes</li>
             </ul>
           </div>
@@ -247,17 +271,18 @@
         <div class="tier-math">
           <h3>What that looks like in dollars</h3>
           <p>
-            Tally is <b>$129.99 a year</b>. Your people use your 15% code, so they pay <b>$110.49</b>,
-            and you earn your rate on what they actually pay. Here is every rung, worked out.
+            Tally is <b>$129.99 a year</b>. Say your code takes 15% off. Anyone who uses it pays
+            <b>$110.49</b>, and you earn your rate on what they actually paid. Here is all three,
+            worked out.
           </p>
           <div class="math-scroll">
             <table class="math">
               <thead>
                 <tr>
-                  <th class="who">Your rung</th>
-                  <th>1 person</th>
-                  <th>5 people</th>
-                  <th>10 people</th>
+                  <th class="who">Where you are</th>
+                  <th>1 subscriber</th>
+                  <th>5 subscribers</th>
+                  <th>10 subscribers</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,9 +309,53 @@
           </div>
           <p class="math-foot">
             Every number above lands <b>again next year</b>, and the year after, for as long as those
-            people stay. Ten people at Platinum who stick around three years is about <b>$829</b>, and
-            you only had to send them once. Climb to Gold and the raise applies to the people you
-            already sent, not just the next ones.
+            subscribers stay. Ten of them at Platinum, still around in three years, is about
+            <b>$829</b>, and you only had to send them once. Climb to Gold and the raise applies to
+            the subscribers you already sent, not just the next ones.
+          </p>
+        </div>
+
+        <div class="plat-math">
+          <div class="eyebrow">Platinum only</div>
+          <h3>Then the 5% starts doing the work.</h3>
+          <p>
+            At Platinum you can bring other creators into the club, and you earn <b>5%</b> of every
+            subscription <b>they</b> send. That is <b>$5.52 a year</b> per subscriber. Next to your own
+            25% it sounds like the small number. It is the big one, because it is not your work.
+          </p>
+          <div class="math-scroll">
+            <table class="math">
+              <thead>
+                <tr>
+                  <th class="who">Creators you brought in</th>
+                  <th>5 subscribers each</th>
+                  <th>10 subscribers each</th>
+                  <th>25 subscribers each</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th class="who"><b>5 creators</b><span>5% of what they send</span></th>
+                  <td>$138.11<small>a year</small></td>
+                  <td>$276.23<small>a year</small></td>
+                  <td>$690.56<small>a year</small></td>
+                </tr>
+                <tr class="top">
+                  <th class="who"><b>10 creators</b><span>5% of what they send</span></th>
+                  <td>$276.23<small>a year</small></td>
+                  <td>$552.45<small>a year</small></td>
+                  <td>$1,381.13<small>a year</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="punch">
+            Ten creators with five subscribers each pays you <b>exactly what ten subscribers of your
+            own would</b>, and you did not send a single one of them. At ten subscribers each it pays
+            <b>double</b>. Your own 25% is capped by how often you post. The 5% is not.
+          </p>
+          <p style="margin-top:14px;font-size:0.88rem;color:var(--t3);">
+            And it stacks on top. The 25% you earn yourself does not go anywhere.
           </p>
         </div>
         <div class="tier-note">
