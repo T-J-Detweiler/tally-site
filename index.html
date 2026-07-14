@@ -177,27 +177,30 @@
        unnerving; a ticket you watched being handed to you is not the same event, even though
        it is the same event. */
     .ticket {
-      position: relative; text-align: left; margin: 0 auto 18px; max-width: 320px;
-      padding: 13px 16px 12px;
+      display: flex; align-items: stretch; text-align: left; margin: 0 auto 18px; max-width: 340px;
       background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #7B00FF, #FF006E) border-box;
-      border: 1.5px solid transparent; border-radius: 12px;
+      border: 1.5px solid transparent; border-radius: 12px; overflow: hidden;
     }
-    /* The punched notches. Same trick both sides: a circle the colour of the sheet behind. */
-    .ticket::before, .ticket::after {
-      content: ''; position: absolute; top: 50%; width: 12px; height: 12px;
-      background: #fff; border-radius: 50%; transform: translateY(-50%);
-      box-shadow: inset 0 0 0 1.5px rgba(123,0,255,0.25);
+    .ticket-main { flex: 1; min-width: 0; padding: 13px 14px 12px; }
+    /* The stub. A dashed perforation splits it off, and the tick lives ON it — a validated
+       ticket, which is exactly what this object is. Two punched dents alone read as a card. */
+    .ticket-stub {
+      width: 76px; flex: none; display: flex; align-items: center; justify-content: center;
+      border-left: 2px dashed rgba(123,0,255,0.35);
+      background: linear-gradient(135deg, rgba(123,0,255,0.06), rgba(255,0,110,0.06));
     }
-    .ticket::before { left: -7px; }
-    .ticket::after  { right: -7px; }
+    .ticket-stub-in {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 0.58rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      color: #bbb; text-align: center; line-height: 1.3;
+    }
+    .ticket-stub-in.copied { color: #12b76a; }
     .ticket-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
     .ticket-label {
       font-size: 0.62rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
       background: linear-gradient(135deg, #7B00FF, #FF006E);
       -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .ticket-state { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #bbb; white-space: nowrap; }
-    .ticket-state.copied { color: #12b76a; }
     .ticket-code {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.74rem; color: #888; letter-spacing: 0.01em;
@@ -208,8 +211,8 @@
     .ticket-hint b { color: #1a1a1a; }
     /* The tick. Grows once, then sits there. */
     @keyframes ticket-pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
-    .ticket-state.copied svg { animation: ticket-pop 0.32s ease both; vertical-align: -2px; margin-right: 3px; }
-    @media (prefers-reduced-motion: reduce) { .ticket-state.copied svg { animation: none; } }
+    .ticket-stub-in.copied svg { animation: ticket-pop 0.32s ease both; display: block; }
+    @media (prefers-reduced-motion: reduce) { .ticket-stub-in.copied svg { animation: none; } }
 
     .store-badges { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
     .store-badges a { display: inline-flex; align-items: center; text-decoration: none; }
@@ -472,12 +475,12 @@
              it green in front of them when they tap Download. By the time they are in the app
              asking them to paste, it is the thing they were already expecting. -->
         <div id="su-ticket" class="ticket">
-          <div class="ticket-head">
-            <span class="ticket-label">Your Tally ticket</span>
-            <span id="ticket-state" class="ticket-state">Ready</span>
+          <div class="ticket-main">
+            <div class="ticket-head"><span class="ticket-label">Your Tally ticket</span></div>
+            <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
+            <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this for you when you tap below. In the app, tap the box, tap it <b>again</b>, and hit <b>Paste</b>.</div>
           </div>
-          <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
-          <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this for you when you tap below. In the app, <b>tap and hold</b> the box and hit <b>Paste</b>. That&rsquo;s it, you&rsquo;re in.</div>
+          <div class="ticket-stub"><div id="ticket-state" class="ticket-stub-in"><span>Ready</span></div></div>
         </div>
         <div id="su-sub-cta" style="font-weight:700;font-size:1rem;color:#1a1a1a;margin-bottom:12px;">Download Tally and start tallying.</div>
         <div id="su-sub-badges" class="store-badges"></div>
@@ -765,6 +768,21 @@
       c.textContent = code;                  // the real thing, in full. Nothing hidden.
     }
     var TICK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12b76a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    // ANDROID OPENED PLAY IN THE BROWSER. Android only hands a play.google.com link to the Play
+    // Store APP when it believes a human clicked it. We hold navigation 550ms so the green tick
+    // can be seen, and that delay makes the navigation look PROGRAMMATIC, so Android stopped
+    // handing it over and just loaded the web page.
+    //
+    // So stop relying on the heuristic and ask for the Play Store by name. An intent:// URL says
+    // "open com.android.vending", and carries its own browser_fallback_url for the rare device
+    // with no Play Store. iOS needs none of this: it hands apps.apple.com to the App Store even
+    // from a scripted navigation.
+    var PLAY_INTENT = 'intent://details?id=com.tallyapplications.tally#Intent;scheme=market;package=com.android.vending;' +
+      'S.browser_fallback_url=' + encodeURIComponent(STORE_ANDROID) + ';end';
+    function storeDest(dest) {
+      var isAndroid = /Android/.test(navigator.userAgent || '');
+      return (isAndroid && dest === STORE_ANDROID) ? PLAY_INTENT : dest;
+    }
     function storeHandoff(ev, dest) {
       // No ticket ready? Let the link do what links do. They get the email login.
       if (!_handoffCode || !navigator.clipboard) return true;
@@ -778,9 +796,10 @@
         // so being asked to paste in the app is expected instead of strange.
         var st = document.getElementById('ticket-state');
         var hint = document.getElementById('ticket-hint');
-        if (st) { st.className = 'ticket-state copied'; st.innerHTML = TICK + 'Copied'; }
-        if (hint) hint.innerHTML = 'Copied. Install Tally, then <b>tap and hold</b> the box and hit <b>Paste</b>. No email, no code.';
-        var go = function () { setTimeout(function () { location.href = dest; }, 550); };
+        if (st) { st.className = 'ticket-stub-in copied'; st.innerHTML = TICK + '<span>Copied</span>'; }
+        if (hint) hint.innerHTML = 'Copied. Install Tally, then tap the box, tap it <b>again</b>, and hit <b>Paste</b>. No email, no code.';
+        var target = storeDest(dest);
+        var go = function () { setTimeout(function () { location.href = target; }, 550); };
         if (p && p.then) p.then(go, go); else go();
       } catch (_) { location.href = dest; }
       return false;
