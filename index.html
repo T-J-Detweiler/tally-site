@@ -171,6 +171,46 @@
     .su-greet-in { animation: su-greet-in 0.28s ease both; }
     @media (prefers-reduced-motion: reduce) { .su-greet-in { animation: none; } }
 
+    /* ── The Tally ticket ────────────────────────────────────────────
+       A ticket stub: gradient ring, punched notches on both sides, the code in mono. It is
+       doing a job of TRUST, not decoration. A code silently appearing on your clipboard is
+       unnerving; a ticket you watched being handed to you is not the same event, even though
+       it is the same event. */
+    .ticket {
+      position: relative; text-align: left; margin: 0 auto 18px; max-width: 320px;
+      padding: 13px 16px 12px;
+      background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #7B00FF, #FF006E) border-box;
+      border: 1.5px solid transparent; border-radius: 12px;
+    }
+    /* The punched notches. Same trick both sides: a circle the colour of the sheet behind. */
+    .ticket::before, .ticket::after {
+      content: ''; position: absolute; top: 50%; width: 12px; height: 12px;
+      background: #fff; border-radius: 50%; transform: translateY(-50%);
+      box-shadow: inset 0 0 0 1.5px rgba(123,0,255,0.25);
+    }
+    .ticket::before { left: -7px; }
+    .ticket::after  { right: -7px; }
+    .ticket-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .ticket-label {
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+      background: linear-gradient(135deg, #7B00FF, #FF006E);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .ticket-state { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #bbb; white-space: nowrap; }
+    .ticket-state.copied { color: #12b76a; }
+    .ticket-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.74rem; color: #888; letter-spacing: 0.01em;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      background: #faf8fd; border-radius: 7px; padding: 7px 9px; margin-bottom: 8px;
+    }
+    .ticket-hint { font-size: 0.78rem; color: #666; line-height: 1.5; }
+    .ticket-hint b { color: #1a1a1a; }
+    /* The tick. Grows once, then sits there. */
+    @keyframes ticket-pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+    .ticket-state.copied svg { animation: ticket-pop 0.32s ease both; vertical-align: -2px; margin-right: 3px; }
+    @media (prefers-reduced-motion: reduce) { .ticket-state.copied svg { animation: none; } }
+
     .store-badges { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
     .store-badges a { display: inline-flex; align-items: center; text-decoration: none; }
     .store-badges img { display: block; }
@@ -427,6 +467,18 @@
         <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:linear-gradient(135deg,#7B00FF,#FF006E);display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <div style="font-weight:800;font-size:1.32rem;letter-spacing:-0.01em;margin-bottom:6px;">You&rsquo;re in</div>
         <div id="su-sub-headline" style="color:#666;font-size:0.95rem;margin-bottom:20px;">Your free trial has started.</div>
+        <!-- THE TALLY TICKET. Nothing feels invasive if you said it was coming and showed it
+             happen. So we name the thing, show it, promise exactly one action, and then tick
+             it green in front of them when they tap Download. By the time they are in the app
+             asking them to paste, it is the thing they were already expecting. -->
+        <div id="su-ticket" class="ticket">
+          <div class="ticket-head">
+            <span class="ticket-label">Your Tally ticket</span>
+            <span id="ticket-state" class="ticket-state">Ready</span>
+          </div>
+          <div id="ticket-code" class="ticket-code">preparing&hellip;</div>
+          <div id="ticket-hint" class="ticket-hint">We&rsquo;ll copy this for you when you tap below. In the app, <b>tap and hold</b> the box and hit <b>Paste</b>. That&rsquo;s it, you&rsquo;re in.</div>
+        </div>
         <div id="su-sub-cta" style="font-weight:700;font-size:1rem;color:#1a1a1a;margin-bottom:12px;">Download Tally and start tallying.</div>
         <div id="su-sub-badges" class="store-badges"></div>
         <div id="su-sub-note" style="color:#999;font-size:0.85rem;margin-top:16px;"></div>
@@ -694,22 +746,41 @@
         if (_handoffCode) return;
         var s = await sb().auth.getSession();
         var sess = s.data && s.data.session;
-        if (!sess) return;
+        if (!sess) { hideTicket(); return; }
         var r = await fetch(WORKER + '/app-handoff', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: sess.user.id, accessToken: sess.access_token }) });
         var d = await r.json();
-        if (d && d.code) _handoffCode = 'tally-signin-' + d.code;
-      } catch (_) {}
+        if (d && d.code) { _handoffCode = 'tally-signin-' + d.code; showTicket(_handoffCode); }
+        else hideTicket();
+      } catch (_) { hideTicket(); }
     }
+    // No ticket, no promise. If we couldn't mint one, the card vanishes rather than advertising
+    // a paste that will never work; they get the ordinary email login and never know.
+    function hideTicket() { var t = document.getElementById('su-ticket'); if (t) t.style.display = 'none'; }
+    function showTicket(code) {
+      var t = document.getElementById('su-ticket'), c = document.getElementById('ticket-code');
+      if (!t || !c) return;
+      t.style.display = 'block';
+      c.textContent = code;                  // the real thing, in full. Nothing hidden.
+    }
+    var TICK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#12b76a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
     function storeHandoff(ev, dest) {
-      // No clipboard code ready? Let the link do what links do. They get the email login.
+      // No ticket ready? Let the link do what links do. They get the email login.
       if (!_handoffCode || !navigator.clipboard) return true;
       try {
         ev.preventDefault();
-        // SYNCHRONOUS inside the gesture. Nothing may be awaited before this line.
+        // SYNCHRONOUS inside the gesture. Nothing may be awaited before this line, or Safari
+        // treats the tap as over and silently refuses the write.
         var p = navigator.clipboard.writeText(_handoffCode);
-        var go = function () { location.href = dest; };
+        // Tick it green IN FRONT OF THEM, then pause long enough to be seen before the App
+        // Store takes the screen. This half-second is the entire point: they watched it happen,
+        // so being asked to paste in the app is expected instead of strange.
+        var st = document.getElementById('ticket-state');
+        var hint = document.getElementById('ticket-hint');
+        if (st) { st.className = 'ticket-state copied'; st.innerHTML = TICK + 'Copied'; }
+        if (hint) hint.innerHTML = 'Copied. Install Tally, then <b>tap and hold</b> the box and hit <b>Paste</b>. No email, no code.';
+        var go = function () { setTimeout(function () { location.href = dest; }, 550); };
         if (p && p.then) p.then(go, go); else go();
       } catch (_) { location.href = dest; }
       return false;
