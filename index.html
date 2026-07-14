@@ -197,7 +197,12 @@
       margin: auto; background: #fff; border-radius: 22px; max-width: 380px; width: 100%;
       padding: 28px 24px 24px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.35);
     }
-    .ticket-pop-head { font-weight: 800; font-size: 1.24rem; letter-spacing: -0.01em; color: #1a1a1a; margin-bottom: 16px; }
+    .ticket-pop-head {
+      font-weight: 800; font-size: 1.32rem; letter-spacing: -0.01em; margin-bottom: 16px;
+      color: #7B00FF;                          /* fallback if the clip fails */
+      background: linear-gradient(135deg, #7B00FF, #FF006E);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
     .ticket-pop-body { font-size: 0.94rem; color: #555; line-height: 1.6; margin: 16px 0 20px; }
     .ticket-pop-body b { color: #1a1a1a; }
     .ticket-pop-fine { font-size: 0.8rem; color: #aaa; margin-top: 12px; line-height: 1.5; }
