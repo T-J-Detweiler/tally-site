@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tally — Honest calorie tracking, without the fuss</title>
-  <meta name="description" content="Tally is the effortless way to track what you eat. Snap a photo or just say what you had — Tally does the rest, and tells you exactly what's left to hit your goal today.">
+  <title>Tally: Easy, fast calorie tracking</title>
+  <meta name="description" content="Say what you ate and Tally does the rest. Catch up your whole day in one sentence, photograph a recipe to get its calories and macros, and pull real numbers straight from the restaurant.">
   <meta name="theme-color" content="#7B00FF">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Cdefs%3E%3ClinearGradient%20id='b'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%237B00FF'/%3E%3Cstop%20offset='1'%20stop-color='%23FF006E'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width='512'%20height='512'%20rx='115'%20fill='url(%23b)'/%3E%3Crect%20x='148'%20y='148'%20width='216'%20height='50'%20rx='25'%20fill='white'/%3E%3Crect%20x='231'%20y='210'%20width='50'%20height='166'%20rx='25'%20fill='white'/%3E%3C/svg%3E">
 
   <!-- Open Graph / social preview -->
-  <meta property="og:title" content="Tally — Honest calorie tracking, without the fuss">
-  <meta property="og:description" content="Snap a photo or just say what you ate. Tally gives you an honest estimate in one tap — no obsessive logging, no guilt.">
+  <meta property="og:title" content="Tally: Easy, fast calorie tracking">
+  <meta property="og:description" content="Say what you ate and Tally does the rest. Catch up your whole day in one sentence, or photograph a recipe to get its calories and macros.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://doyoutally.com">
   <meta property="og:image" content="https://doyoutally.com/icon-192.png">
@@ -98,6 +98,88 @@
     .ps-meal-macros .c { color: var(--purple); font-weight: 800; }
     .ps-chev { color: var(--t3); font-size: 0.8rem; flex-shrink: 0; }
 
+    /* ── Spotlights ──────────────────────────────────────────────────
+       The two things the app does that nothing else does: catch up a whole day in one
+       sentence, and turn a recipe into per-serving numbers. They get room, an example in
+       the user's own words, and a picture of the REAL screen.
+
+       .shot is a swap slot. Today it holds a CSS replica of the app screen; when the real
+       screen recordings land, an <img> or muted <video> drops into the same box at the same
+       size and nothing else on the page moves. Build the frame once. */
+    .spot { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .spot + .spot { margin-top: 96px; }
+    .spot.rev .spot-copy { order: 2; }
+    .spot-copy .pill { margin-bottom: 18px; }
+    .spot-copy h2 { font-size: clamp(1.7rem, 3.6vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.14; margin-bottom: 16px; }
+    .spot-copy p.lead { font-size: 1.06rem; color: var(--t2); margin-bottom: 22px; }
+    .spot-list { list-style: none; display: grid; gap: 11px; }
+    .spot-list li { display: flex; gap: 11px; align-items: flex-start; font-size: 0.98rem; color: var(--t2); }
+    .spot-list svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 4px; stroke: url(#fgrad); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .spot-list b { color: var(--t1); font-weight: 700; }
+    .shot { display: flex; justify-content: center; }
+    .shot .phone { width: 274px; }
+
+    /* The in-phone app replicas. These mirror the app's own components: gradient user
+       bubble, gradient-ringed result card, per-line rows, gradient "Log it" bar. */
+    .ap-head { text-align: center; font-weight: 800; font-size: 0.82rem; color: var(--t2); margin-bottom: 12px; }
+    .ap-said {
+      background: var(--g); color: #fff; border-radius: 15px 15px 4px 15px;
+      padding: 11px 13px; font-size: 0.72rem; line-height: 1.45; margin-bottom: 12px;
+    }
+    .ap-card {
+      background: #fff; border: 1.5px solid var(--purple); border-radius: 15px;
+      padding: 13px 12px; box-shadow: 0 6px 20px rgba(123,0,255,0.10);
+    }
+    .ap-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .ap-tag {
+      display: inline-block; background: var(--g); color: #fff; border-radius: 999px;
+      font-size: 0.52rem; font-weight: 800; letter-spacing: 0.06em; padding: 3px 8px; vertical-align: middle;
+    }
+    .ap-title { font-size: 0.86rem; font-weight: 800; margin-top: 5px; }
+    .ap-total { font-size: 1.24rem; font-weight: 800; line-height: 1; background: var(--g); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .ap-total-lbl { font-size: 0.48rem; font-weight: 700; color: var(--t3); letter-spacing: 0.06em; text-align: right; margin-top: 3px; }
+    .ap-macros { font-size: 0.62rem; color: var(--t3); margin: 7px 0 10px; }
+    .ap-macros b { color: var(--t1); font-weight: 700; }
+    .ap-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--raised); border-radius: 9px; padding: 8px 9px; margin-bottom: 6px; }
+    .ap-row .nm { font-size: 0.7rem; font-weight: 700; }
+    .ap-row .sub { font-size: 0.58rem; color: var(--t3); margin-top: 2px; }
+    .ap-row .sub b { color: var(--t1); font-weight: 700; }
+    .ap-steps { display: flex; gap: 5px; flex-shrink: 0; }
+    .ap-step {
+      width: 25px; height: 25px; border-radius: 7px; background: #fff;
+      border: 1px solid var(--border); color: var(--purple);
+      font-size: 0.82rem; font-weight: 800; line-height: 23px; text-align: center;
+    }
+    .ap-swap {
+      flex-shrink: 0; font-size: 0.6rem; font-weight: 800; color: var(--purple);
+      background: var(--accent-bg); border: 1px solid #f0d9ff; border-radius: 8px; padding: 5px 9px;
+    }
+    .ap-log { margin-top: 10px; background: var(--g); color: #fff; border-radius: 11px; padding: 10px; text-align: center; font-size: 0.78rem; font-weight: 800; }
+    .ap-lbl { font-size: 0.55rem; font-weight: 800; color: var(--t3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .ap-serv { display: flex; align-items: center; justify-content: space-between; background: var(--accent-bg); border: 1px solid #f0d9ff; border-radius: 9px; padding: 7px 9px; margin-bottom: 10px; }
+    .ap-serv .v { font-size: 0.72rem; font-weight: 800; }
+    .ap-serv .per { font-size: 0.58rem; color: var(--t2); }
+    .ap-per { text-align: center; font-size: 0.62rem; color: var(--t2); margin-top: 9px; }
+    .ap-per b { color: var(--purple); font-weight: 800; }
+
+    /* ── The discount door ──
+       Loud on purpose. A gradient ring, a big headline, and the disclaimer in plain sight
+       rather than in fine print nobody reads until they have already paid full price. */
+    .promo-door {
+      max-width: 720px; margin: 0 auto; text-align: center;
+      background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--g) border-box;
+      border: 2px solid transparent; border-radius: 22px; padding: 40px 30px 32px;
+      box-shadow: 0 16px 44px rgba(123,0,255,0.10);
+    }
+    .promo-door .pill { margin-bottom: 16px; }
+    .promo-door h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .promo-door p { font-size: 1.04rem; color: var(--t2); max-width: 520px; margin: 0 auto 24px; }
+    .promo-fine {
+      font-size: 0.88rem; color: var(--t2); line-height: 1.6;
+      max-width: 540px; margin: 22px auto 0; padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
     /* ── Features ── */
     .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
     .feature { transition: transform 0.18s ease, box-shadow 0.18s ease; }
@@ -124,6 +206,14 @@
     .step h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 8px; }
     .step p { font-size: 0.96rem; color: var(--t2); }
 
+    @media (max-width: 900px) {
+      /* Copy above the screen, always: on a phone the words have to land first, and an
+         alternating layout that flips one section's order reads as a bug. */
+      .spot { grid-template-columns: 1fr; gap: 34px; }
+      .spot.rev .spot-copy { order: 0; }
+      .spot + .spot { margin-top: 66px; }
+      .spot-copy { text-align: left; }
+    }
     @media (max-width: 760px) {
       .features, .steps { grid-template-columns: 1fr; }
       .hero { padding: 60px 0 48px; }
@@ -261,9 +351,16 @@
   </style>
 </head>
 <body>
-  <!-- shared gradient defs for inline SVG strokes -->
+  <!-- Shared gradient defs for inline SVG strokes.
+       gradientUnits="userSpaceOnUse" IS LOAD-BEARING, not a style choice. SVG's default is
+       objectBoundingBox, and a straight vertical or horizontal <line> has a bounding box with
+       ZERO width or height — so the gradient collapses and the stroke paints NOTHING. That is
+       exactly what happened: the Week icon (four vertical bars) rendered completely blank, and
+       the Smart Tally lightbulb lost the two horizontal lines at its base. Every icon on this
+       page draws in a 0 0 24 24 viewBox, so the gradient is pinned to that space. The app's own
+       plusGrad does the same thing for the same reason. Do not "simplify" this back to %. -->
   <svg width="0" height="0" style="position:absolute"><defs>
-    <linearGradient id="fgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="fgrad" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
       <stop offset="0%" stop-color="#7B00FF"/><stop offset="100%" stop-color="#FF006E"/>
     </linearGradient>
     <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -284,12 +381,12 @@
   <main id="top">
     <!-- Hero -->
     <section class="hero wrap">
-      <span class="pill">Honest tracking, zero guilt</span>
-      <h1>Track what you eat<br>in <span class="grad">a single tap.</span></h1>
+      <span class="pill">Easy. Fast. FUN.</span>
+      <h1>Say what you ate.<br><span class="grad">Tally does the rest.</span></h1>
       <p class="lead">
-        Tally is the effortless calorie tracker. Snap a photo or just say what you had —
-        Tally gives you an honest estimate and tells you exactly what's left to hit your goal today.
-        No tedious searching. No fake precision. No guilt.
+        Snap a photo, say what you had, or catch up your <em>whole day</em> in one sentence.
+        Tally sorts it into meals, does the math, and tells you exactly what is left to hit
+        your goal today. No tedious searching. No fake precision.
       </p>
       <div class="hero-actions">
         <button class="btn lg" onclick="openSignup()"><span>Start your free trial</span></button>
@@ -350,42 +447,170 @@
       </div>
     </section>
 
+    <!-- ── The two spotlights: the whole-day dump, and the Cookbook ──
+         These are the reasons to switch, so they get real estate and a real screen, not a
+         card in a six-up grid. Everything else the app does is table stakes by comparison. -->
+    <section class="block wrap" id="spotlights">
+      <!-- 1. Whole-day logging -->
+      <div class="spot">
+        <div class="spot-copy">
+          <span class="pill">Log your whole day</span>
+          <h2>Forgot to log?<br><span class="grad">Say the whole day at once.</span></h2>
+          <p class="lead">
+            It is 9pm and you have logged nothing. Every other tracker makes you enter four
+            meals, one at a time. Tally lets you say it all in one breath, and sorts it into
+            breakfast, lunch, dinner and snacks for you.
+          </p>
+          <ul class="spot-list">
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Talk or type. <b>One sentence, the entire day.</b></span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Every meal split out, every item priced, all of it <b>editable in a tap</b>.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Ate out? Tally pulls the <b>real numbers straight from the restaurant</b>.</span></li>
+          </ul>
+        </div>
+        <div class="shot">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="ap-head">Smart Tally</div>
+              <div class="ap-said">
+                Oatmeal and coffee for breakfast, a turkey club with chips for lunch,
+                salmon, rice and broccoli for dinner, and a square of chocolate after.
+              </div>
+              <div class="ap-card">
+                <div class="ap-card-top">
+                  <div>
+                    <span class="ap-tag">YOUR DAY</span>
+                    <div class="ap-title">4 meals &middot; 11 items</div>
+                  </div>
+                  <div>
+                    <div class="ap-total">1,720</div>
+                    <div class="ap-total-lbl">CAL TOTAL</div>
+                  </div>
+                </div>
+                <div class="ap-macros"><b>96g</b> protein &nbsp; <b>174g</b> carbs &nbsp; <b>58g</b> fat</div>
+                <div class="ap-row">
+                  <div><div class="nm">Breakfast</div><div class="sub"><b>310 cal</b> &middot; oatmeal, coffee</div></div>
+                  <div class="ap-steps"><div class="ap-step">&minus;</div><div class="ap-step">+</div></div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Lunch</div><div class="sub"><b>640 cal</b> &middot; turkey club, chips</div></div>
+                  <div class="ap-steps"><div class="ap-step">&minus;</div><div class="ap-step">+</div></div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Dinner</div><div class="sub"><b>720 cal</b> &middot; salmon, rice, broccoli</div></div>
+                  <div class="ap-steps"><div class="ap-step">&minus;</div><div class="ap-step">+</div></div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Snacks</div><div class="sub"><b>50 cal</b> &middot; dark chocolate</div></div>
+                  <div class="ap-steps"><div class="ap-step">&minus;</div><div class="ap-step">+</div></div>
+                </div>
+                <div class="ap-log">Log it &middot; 1,720 cal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. The Tally Cookbook -->
+      <div class="spot rev">
+        <div class="spot-copy">
+          <span class="pill">The Tally Cookbook</span>
+          <h2>Take a picture of a recipe.<br><span class="grad">Get the numbers.</span></h2>
+          <p class="lead">
+            The food you cook at home is the food nobody can track. Point Tally at a page in a
+            cookbook, or paste a link, and the calories and macros just show up. Every
+            ingredient split out, priced per serving.
+          </p>
+          <ul class="spot-list">
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Made <b>15 servings instead of 18?</b> Change it in a second and every number follows.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Swapped ground beef for turkey? <b>Two taps</b> and it is done.</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Cook it again next week and <b>log it in one tap</b>. You never build it twice.</span></li>
+          </ul>
+        </div>
+        <div class="shot">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="ap-head">Your Tally Cookbook</div>
+              <div class="ap-card">
+                <div class="ap-title" style="margin:0 0 10px;">Creamy Tahini Quinoa Bowls</div>
+                <div class="ap-serv">
+                  <div>
+                    <div class="ap-lbl" style="margin:0;">MAKES</div>
+                    <div class="v">6 servings</div>
+                  </div>
+                  <div class="ap-steps"><div class="ap-step">&minus;</div><div class="ap-step">+</div></div>
+                </div>
+                <div class="ap-lbl">INGREDIENTS</div>
+                <div class="ap-row">
+                  <div><div class="nm">Uncooked quinoa</div><div class="sub">185g &middot; <b>612 cal</b></div></div>
+                  <div class="ap-swap">Swap</div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Ground turkey</div><div class="sub">450g &middot; <b>765 cal</b></div></div>
+                  <div class="ap-swap">Swap</div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Large sweet potato</div><div class="sub">300g &middot; <b>231 cal</b></div></div>
+                  <div class="ap-swap">Swap</div>
+                </div>
+                <div class="ap-row">
+                  <div><div class="nm">Tahini</div><div class="sub">60g &middot; <b>355 cal</b></div></div>
+                  <div class="ap-swap">Swap</div>
+                </div>
+                <div class="ap-per"><b>342 cal</b> per serving &middot; <b>28g</b> protein</div>
+                <div class="ap-log">Log 1 serving &middot; 342 cal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Features -->
     <section class="block wrap" id="features">
       <div class="section-head">
-        <h2>Built for real life, not spreadsheets</h2>
-        <p>Most trackers make you work. Tally does the work for you — and gets out of the way.</p>
+        <h2>Everything you get with Tally</h2>
+        <p>Every tool is one tap from the same button. Use the ones that fit your day and ignore the rest.</p>
       </div>
+      <!-- THE GLYPHS ARE THE APP'S OWN. Lifted verbatim from the launcher tray and the bottom
+           nav in index.html, so the icon a visitor learns here is the icon they tap on their
+           phone. Do not redraw them to suit the web page; change the app first, then copy. -->
       <div class="features">
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h1l1-2h6l1 2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.2"/></svg></div>
-          <h3>Snap a photo</h3>
-          <p>Point your camera at a plate, a label, or a packaged item. Tally reads it and logs it — one capture, done.</p>
+          <!-- Tally Snap: the launcher's camera glyph -->
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 8.5a2 2 0 0 1 2-2h2L9.3 4.7h5.4L16 6.5h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8z"/><circle cx="12" cy="12.3" r="3.2"/></svg></div>
+          <h3>Tally Snap</h3>
+          <p>One photo does it all. It reads a nutrition label and gets it right. No label? It finds the numbers for you. Point it at a whole plate and it makes an honest guess you can fix in a few taps.</p>
         </div>
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg></div>
-          <h3>Just describe it</h3>
-          <p>Type or say "a turkey sandwich and a handful of chips." Tally breaks it into editable items with honest estimates.</p>
+          <!-- Smart Tally: the launcher's lightbulb glyph -->
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="21.5" x2="14" y2="21.5"/></svg></div>
+          <h3>Smart Tally</h3>
+          <p>Say what you ate in plain words. "A turkey sandwich and a handful of chips." Tally breaks it into items you can edit, each with an honest estimate.</p>
         </div>
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
-          <h3>Real restaurant numbers</h3>
-          <p>Eating out? Tally pulls the official nutrition straight from the restaurant or brand — not a stale guess.</p>
+          <!-- Re-Tally: the launcher's lightning-bolt glyph -->
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M13 2 5 13h5l-1 9 9-12h-5l1-8z"/></svg></div>
+          <h3>Re-Tally</h3>
+          <p>The fastest way to Tally. The protein bar and the smoothie you have every single day are one tap away, forever. You never search for the same thing twice.</p>
         </div>
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 20V10M6 20v-4M18 20V6"/></svg></div>
-          <h3>Know your day at a glance</h3>
-          <p>See what's <em>left</em> to hit your goal — calories and protein — so you can steer dinner, not just record it.</p>
+          <!-- Tally Ledger: the Today tab's clock glyph, because that is where the ledger lives -->
+          <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="15" y2="14"/></svg></div>
+          <h3>The Tally Ledger</h3>
+          <p>Your whole day on one screen, meal by meal, with what is <em>left</em> to hit your goal right at the top. See where the calories went, then steer dinner instead of just recording it.</p>
         </div>
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-          <h3>Honest, never obsessive</h3>
-          <p>A good estimate you'll actually keep beats perfect numbers you'll quit. Edit anything in seconds if you care to.</p>
+          <!-- Your week: the Week tab's bar glyph -->
+          <div class="ico"><svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="4" y2="13"/><line x1="10" y1="20" x2="10" y2="7"/><line x1="16" y1="20" x2="16" y2="11"/><line x1="21" y1="20" x2="21" y2="4"/></svg></div>
+          <h3>Your whole week</h3>
+          <p>One big day does not undo a good week. Tally shows the week as a whole, so a Saturday out is just a Saturday, not a reason to quit on Monday.</p>
         </div>
         <div class="card feature">
-          <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="M12 7v5l3 2"/></svg></div>
-          <h3>Never re-enter a meal</h3>
-          <p>Save the things you eat all the time and re-log them with a single tap tomorrow.</p>
+          <!-- Add Manually: the launcher's pencil glyph. Every number in Tally is editable, and
+               this is the card that says so. -->
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M5 19l1.2-4.2L16 5a2 2 0 0 1 3 3l-9.8 9.8L5 19z"/><line x1="14" y1="7" x2="17" y2="10"/></svg></div>
+          <h3>Track only what you care about</h3>
+          <p>Just calories and protein? Great. Want fiber too? Sure. Only calories? That works too. And every number Tally gives you can be changed in seconds if you want to.</p>
         </div>
       </div>
     </section>
@@ -395,23 +620,23 @@
       <div class="wrap">
         <div class="section-head">
           <h2>Logging a meal takes seconds</h2>
-          <p>Three ways in, one honest answer out.</p>
+          <p>A meal, a recipe, or the whole day. One honest answer out.</p>
         </div>
         <div class="steps">
           <div class="step">
             <div class="num">1</div>
-            <h3>Capture or describe</h3>
-            <p>Snap a photo, or just tell Tally what you ate in plain words.</p>
+            <h3>Snap, say, or dump the day</h3>
+            <p>Take a photo, tell Tally what you ate in plain words, or catch up the entire day in one sentence.</p>
           </div>
           <div class="step">
             <div class="num">2</div>
             <h3>Tally does the math</h3>
-            <p>It identifies the food, grounds it to official numbers when it can, and estimates the rest — honestly.</p>
+            <p>It works out what you ate, pulls the real numbers from the restaurant or the label when it can, and honestly estimates the rest.</p>
           </div>
           <div class="step">
             <div class="num">3</div>
             <h3>Tap to log</h3>
-            <p>Confirm in one tap. Tweak anything you want. Watch your "left today" update instantly.</p>
+            <p>Confirm in one tap. Change anything you like. Watch your "left today" update instantly.</p>
           </div>
         </div>
       </div>
@@ -419,17 +644,46 @@
 
     <!-- CTA -->
     <div class="cta-banner wrap">
-      <h2>Eat well. Track honestly.</h2>
-      <p>Tally makes staying on top of your goals feel effortless — the way it should be.</p>
+      <h2>Easy. Fast. FUN.</h2>
+      <p>This is what tracking your food should have felt like the whole time.</p>
       <button class="btn-inv" onclick="openSignup()">Start your free trial</button>
     </div>
 
-    <!-- Store badges. DELIBERATELY BELOW the CTA and never above it: a referred visitor who
-         taps a store badge instead of signing up costs their creator the commission AND costs
-         themselves the discount, and on iPhone they land on full-price In-App Purchase. So the
-         trial is the headline, the stores are the proof it's a real app, and refStoreNote()
-         adds a line steering a referred visitor back to checkout first. -->
-    <section class="block wrap" style="text-align:center;padding-top:0;">
+    <!-- ── THE DISCOUNT DOOR ────────────────────────────────────────────────────────
+         The single most expensive misunderstanding on this site: someone arrives holding a
+         creator's discount, taps a store badge because that is what you do with an app, and
+         the discount is gone. It cannot be entered in the app. It cannot be entered later.
+         The stores take their own payment, at full price, and there is no box to type a code
+         into on either of them.
+
+         So the code gets its own panel, ABOVE the badges, in plain words. One statement for
+         everybody: no "on iPhone do this, on Android do that" fork. The customer does not know
+         or care which billing system they are about to fall into, and making them reason about
+         it is how we lose them. Redeem here, on the web. That is the whole message. -->
+    <section class="block wrap" style="padding-top:0;padding-bottom:0;">
+      <div class="promo-door">
+        <span class="pill">Have a discount code?</span>
+        <h2>Redeem it here, on the web.</h2>
+        <p>
+          If a creator or a friend gave you a discount, start your trial on this page and enter
+          the code at checkout. It takes one extra tap and the discount is yours for as long as
+          it lasts.
+        </p>
+        <button class="btn lg" onclick="openSignup()"><span>Start free trial and use my code</span></button>
+        <div class="promo-fine">
+          Discount codes cannot be redeemed in the App Store or on Google Play. Those stores take
+          payment their own way and have nowhere to enter a code. Start here and it is applied
+          before you pay.
+        </div>
+      </div>
+    </section>
+
+    <!-- Store badges. DELIBERATELY BELOW the CTA and the discount door, never above them: a
+         referred visitor who taps a store badge instead of signing up costs their creator the
+         commission AND costs themselves the discount, and on iPhone they land on full-price
+         In-App Purchase. So the trial is the headline, the stores are the proof it's a real
+         app, and refStoreNote() adds a line steering a referred visitor back to checkout. -->
+    <section class="block wrap" style="text-align:center;padding-top:44px;">
       <div style="font-weight:700;font-size:1.02rem;margin-bottom:4px;">Tally lives on your phone.</div>
       <div id="store-note" style="color:var(--t2);font-size:0.92rem;margin-bottom:16px;">Start your trial here, then download the app and sign in with the same email.</div>
       <div class="store-badges" id="home-badges"></div>
