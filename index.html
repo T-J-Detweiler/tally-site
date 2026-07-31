@@ -1221,35 +1221,27 @@
       var isAndroid = /Android/.test(navigator.userAgent || '');
       return (isAndroid && dest === STORE_ANDROID) ? PLAY_INTENT : dest;
     }
-    // IN-APP BROWSERS EAT STORE LINKS. Someone arriving from an Instagram DM or bio is inside
-    // Instagram's own webview, not Safari or Chrome, and a plain apps.apple.com link dies there:
-    // that URL works by redirecting into Apple's private scheme, and the webview blocks the
-    // redirect, so the badge looks broken. Reported from a real phone 2026-07-31.
+    // INSTAGRAM'S BROWSER CANNOT REACH THE APP STORE, AND NOTHING HERE CAN CHANGE THAT.
+    // Tested on a real iPhone 2026-07-31 with six techniques side by side: a plain link, the
+    // itms-apps:// scheme as an href, target=_blank, x-safari-https://, a scripted scheme
+    // navigation, and window.open. ALL SIX did nothing. The same URL opens the App Store instantly
+    // from the Messages app, so the link is fine and the phone is fine.
     //
-    // So ask each platform for its store BY NAME instead of hoping the webview forwards an https
-    // link. iOS understands itms-apps:// (the App Store app's own scheme, no redirect to block);
-    // Android gets the same intent:// the handover screen already uses. If the scheme is ignored
-    // we are still sitting on the page a moment later, so fall back to the ordinary https URL and
-    // they at least land on the web listing. Desktop keeps the plain link.
+    // The cause is that Instagram rewrites every outbound link through its own wrapper and opens
+    // the result in its own webview, which never hands off to the App Store. They own both halves,
+    // so there is no trick to find. Do NOT add one back; it would be theatre.
+    //
+    // What is left is honest: leave iOS as a plain link (identical outcome inside Instagram, and it
+    // is what works everywhere else), keep the Android intent:// which is a genuine win unrelated to
+    // any of this, and TELL an in-app-browser visitor the one route that does work.
     function storeDirect(ev, dest) {
       try {
         var ua = navigator.userAgent || '';
-        // Branch on the DESTINATION as well as the platform. Branching on platform alone sent an
-        // iPhone tapping the PLAY badge to itms-apps://play.google.com, which is nonsense, and the
-        // fallback then dropped them on the Play listing. A badge for the other platform's store is
-        // left as a plain link.
         if (dest === STORE_ANDROID && /Android/.test(ua)) { ev.preventDefault(); location.href = PLAY_INTENT; return false; }
-        if (dest === STORE_IOS && /iPhone|iPad|iPod/.test(ua)) {
-          ev.preventDefault();
-          location.href = dest.replace(/^https:\/\//, 'itms-apps://');
-          setTimeout(function () { location.href = dest; }, 900);   // scheme ignored → the normal link
-          return false;
-        }
       } catch (_) { return true; }
       return true;
     }
-    // No scheme trick is guaranteed inside someone else's webview, so when we can SEE we are in
-    // one, show the escape hatch too. Instagram's UA carries "Instagram"; Facebook's carries FBAN/FBAV.
+    // Instagram's UA carries "Instagram"; Facebook's carries FBAN/FBAV.
     function inAppBrowser() { return /Instagram|FBAN|FBAV/.test(navigator.userAgent || ''); }
     // The badge tap does TWO things and then stops. It copies the ticket (this tap is the user
     // gesture the clipboard API demands — nothing may be awaited before the write, or Safari
@@ -1283,11 +1275,15 @@
       var el = document.getElementById('home-badges');
       if (!el) return;
       el.innerHTML = appleBadge() + googleBadge();
+      // The badges below genuinely will not work here, so say so BEFORE they tap one. A visitor who
+      // taps a dead badge twice and gives up is the failure this exists to prevent.
       if (inAppBrowser()) {
         var tip = document.createElement('div');
-        tip.style.cssText = 'color:var(--t2);font-size:0.86rem;margin-top:12px;line-height:1.5;';
-        tip.textContent = 'Not opening? Tap ••• at the top and choose Open in browser, then tap again.';
-        el.parentNode.appendChild(tip);
+        tip.style.cssText = 'background:rgba(123,0,255,0.07);border:1px solid rgba(123,0,255,0.28);' +
+          'border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:0.88rem;line-height:1.5;color:var(--t1);text-align:left;';
+        tip.innerHTML = '<b>Opening this in Instagram?</b> Instagram’s browser can’t reach the ' +
+          'App Store. Tap <b>•••</b> at the top right, choose <b>Open in browser</b>, then tap the badge below.';
+        el.parentNode.insertBefore(tip, el);
       }
     })();
     // A referred visitor must be told, plainly, that the discount is claimed HERE and not in
