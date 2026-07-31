@@ -1163,11 +1163,11 @@
     // Apple ever sees them, so the discount lands where it was promised and no commission is paid
     // on a discounted sale. IAP therefore only ever serves an organic App Store walk-up.
     function appleBadge(handoff) {
-      return '<a href="' + STORE_IOS + '"' + (handoff ? ' onclick="return storeHandoff(event, STORE_IOS)"' : '') + ' aria-label="Download Tally on the App Store">' +
+      return '<a href="' + STORE_IOS + '" onclick="return ' + (handoff ? 'storeHandoff' : 'storeDirect') + '(event, STORE_IOS)" aria-label="Download Tally on the App Store">' +
              '<img class="badge-apple" src="/badges/app-store.svg" alt="Download on the App Store"></a>';
     }
     function googleBadge(handoff) {
-      return '<a href="' + STORE_ANDROID + '"' + (handoff ? ' onclick="return storeHandoff(event, STORE_ANDROID)"' : '') + ' aria-label="Get Tally on Google Play">' +
+      return '<a href="' + STORE_ANDROID + '" onclick="return ' + (handoff ? 'storeHandoff' : 'storeDirect') + '(event, STORE_ANDROID)" aria-label="Get Tally on Google Play">' +
              '<img class="badge-google" src="/badges/google-play.png" alt="Get it on Google Play"></a>';
     }
     // THE CLIPBOARD HANDOFF. Tapping the badge is a user gesture, which is exactly what the
@@ -1221,6 +1221,32 @@
       var isAndroid = /Android/.test(navigator.userAgent || '');
       return (isAndroid && dest === STORE_ANDROID) ? PLAY_INTENT : dest;
     }
+    // IN-APP BROWSERS EAT STORE LINKS. Someone arriving from an Instagram DM or bio is inside
+    // Instagram's own webview, not Safari or Chrome, and a plain apps.apple.com link dies there:
+    // that URL works by redirecting into Apple's private scheme, and the webview blocks the
+    // redirect, so the badge looks broken. Reported from a real phone 2026-07-31.
+    //
+    // So ask each platform for its store BY NAME instead of hoping the webview forwards an https
+    // link. iOS understands itms-apps:// (the App Store app's own scheme, no redirect to block);
+    // Android gets the same intent:// the handover screen already uses. If the scheme is ignored
+    // we are still sitting on the page a moment later, so fall back to the ordinary https URL and
+    // they at least land on the web listing. Desktop keeps the plain link.
+    function storeDirect(ev, dest) {
+      try {
+        var ua = navigator.userAgent || '';
+        if (/Android/.test(ua)) { ev.preventDefault(); location.href = storeDest(dest); return false; }
+        if (/iPhone|iPad|iPod/.test(ua)) {
+          ev.preventDefault();
+          location.href = dest.replace(/^https:\/\//, 'itms-apps://');
+          setTimeout(function () { location.href = dest; }, 900);   // scheme ignored → the normal link
+          return false;
+        }
+      } catch (_) { return true; }
+      return true;
+    }
+    // No scheme trick is guaranteed inside someone else's webview, so when we can SEE we are in
+    // one, show the escape hatch too. Instagram's UA carries "Instagram"; Facebook's carries FBAN/FBAV.
+    function inAppBrowser() { return /Instagram|FBAN|FBAV/.test(navigator.userAgent || ''); }
     // The badge tap does TWO things and then stops. It copies the ticket (this tap is the user
     // gesture the clipboard API demands — nothing may be awaited before the write, or Safari
     // silently refuses it), and it opens the popup. It does NOT navigate. Travelling is the
@@ -1251,7 +1277,14 @@
     // to see that Tally is a real, shipped app on both stores.
     (function renderHomeBadges() {
       var el = document.getElementById('home-badges');
-      if (el) el.innerHTML = appleBadge() + googleBadge();
+      if (!el) return;
+      el.innerHTML = appleBadge() + googleBadge();
+      if (inAppBrowser()) {
+        var tip = document.createElement('div');
+        tip.style.cssText = 'color:var(--t2);font-size:0.86rem;margin-top:12px;line-height:1.5;';
+        tip.textContent = 'Not opening? Tap ••• at the top and choose Open in browser, then tap again.';
+        el.parentNode.appendChild(tip);
+      }
     })();
     // A referred visitor must be told, plainly, that the discount is claimed HERE and not in
     // the store. Otherwise they tap a badge, pay full price (via Apple's IAP on iPhone, where a
