@@ -1234,8 +1234,12 @@
     function storeDirect(ev, dest) {
       try {
         var ua = navigator.userAgent || '';
-        if (/Android/.test(ua)) { ev.preventDefault(); location.href = storeDest(dest); return false; }
-        if (/iPhone|iPad|iPod/.test(ua)) {
+        // Branch on the DESTINATION as well as the platform. Branching on platform alone sent an
+        // iPhone tapping the PLAY badge to itms-apps://play.google.com, which is nonsense, and the
+        // fallback then dropped them on the Play listing. A badge for the other platform's store is
+        // left as a plain link.
+        if (dest === STORE_ANDROID && /Android/.test(ua)) { ev.preventDefault(); location.href = PLAY_INTENT; return false; }
+        if (dest === STORE_IOS && /iPhone|iPad|iPod/.test(ua)) {
           ev.preventDefault();
           location.href = dest.replace(/^https:\/\//, 'itms-apps://');
           setTimeout(function () { location.href = dest; }, 900);   // scheme ignored → the normal link
